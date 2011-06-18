@@ -1,0 +1,50 @@
+
+google.load('visualization', '1', {packages:[<span tal:replace="packages" />]});
+
+google.setOnLoadCallback(drawTables);
+
+var done = false;
+
+function drawTables() {
+
+    var thousandsformatter = new google.visualization.NumberFormat({fractionDigits: 0, groupingSymbol:","});
+    var percentageformatter = new google.visualization.NumberFormat({suffix: "%", fractionDigits: 1});
+
+    function makeUCSCLink(dataTable, rowNum){
+      return String.fromCharCode('60') + "a href=\"" + dataTable.getValue(rowNum, 6) + '\"' + String.fromCharCode('62') + 'UCSC' + String.fromCharCode('60') + '/a' + String.fromCharCode('62');
+    }
+        
+    <tal:block repeat="chart python:charts">
+      <tal:block define="charttype python:chart.get('charttype', None)">
+
+        <tal:block tal:condition="python:charttype and charttype != 'HeatMap'">
+
+            var data = new google.visualization.DataTable(<span tal:replace="python:chart.get('data', '')" />, 0.6);
+            var view = new google.visualization.DataView(data);
+
+            var table = new google.visualization.<span tal:replace="charttype" />(document.getElementById('<tal:block content="python:chart['id']" />_div'));
+
+            <tal:block content="structure python:chart.get('javascript', '')" />
+
+            table.draw(view,{<tal:block content="python:chart['chartoptions_rendered']" />});    
+
+        </tal:block>
+
+        <tal:block tal:condition="python:charttype == 'HeatMap'">
+            var data = new google.visualization.DataTable(<span tal:replace="python:chart.get('data', '')" />, 0.6);
+            var view = new google.visualization.DataView(data);
+            var table = new org.systemsbiology.visualization.BioHeatMap(document.getElementById('<tal:block content="python:chart['id']" />_div'));
+            table.draw(view, {cellHeight: 8, cellWidth: 8, fontHeight: 7, drawBorder: false});
+
+        </tal:block>
+        
+      </tal:block>
+    </tal:block>
+
+    google.visualization.events.addListener(table, 'ready', table_is_ready);
+
+}
+
+function table_is_ready() {
+     window.done = true;
+}

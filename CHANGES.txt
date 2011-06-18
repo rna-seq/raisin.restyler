@@ -1,0 +1,9 @@
+Next release
+============
+
+Features
+--------
+
+- Switched linechart, barchart and scattercgart to Google visualization corechart. 
+  Now only the table package has to be loaded.
+

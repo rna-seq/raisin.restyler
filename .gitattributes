@@ -1,0 +1,14 @@
+* text=auto !eol
+/CHANGES.txt -text
+/README.txt -text
+rnaseq/__init__.py -text
+rnaseq/restyler/__init__.py -text
+rnaseq/restyler/basefactory.py -text
+rnaseq/restyler/box.py -text
+rnaseq/restyler/config.py -text
+rnaseq/restyler/page.py -text
+rnaseq/restyler/templates/javascript.pt -text
+rnaseq/restyler/utils.py -text
+/setup.cfg -text
+/setup.py -text
+/version.txt -text
