@@ -1,4 +1,4 @@
-= rnaseq.restyler =
+= raisin.restyler =
 
 This package contains the models used to render the pages of repoze.bfg.
 
