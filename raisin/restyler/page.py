@@ -17,7 +17,8 @@ class Page(BaseFactory):
     def __init__(self, request, ):
         BaseFactory.__init__(self, request)
         self.project_name    = request.matchdict.get('project_name',    None)
-        self.experiment_name = request.matchdict.get('experiment_name', None)
+        self.parameter_list = request.matchdict.get('parameter_list', None)
+        self.parameter_values = request.matchdict.get('parameter_values', None)
         self.run_name = request.matchdict.get('run_name', None)
         if self.run_name is None:
             self.statistics_name = request.matchdict.get('experiment_statistics_name', None)
@@ -30,7 +31,7 @@ class Page(BaseFactory):
         # The layout configures the charts to be shown on the page
         if self.project_name is None:
             self.layout = PAGES['homepage']
-        elif self.experiment_name is None:
+        elif self.parameter_list is None:
             self.layout = PAGES['project']
         elif self.run_name is None:
             self.layout = PAGES['experiment_statistics']
@@ -43,15 +44,24 @@ class Page(BaseFactory):
                 self.layout['breadcrumbs']=[self.layout['breadcrumbs']]
             for item in self.layout['breadcrumbs']:
                 if item == 'homepage':
-                    self.breadcrumbs.append({'title': 'Projects', 'url':request.application_url + '/'})
+                    url = request.application_url + '/'
+                    crumb = {'title': 'Projects', 'url':url}
+                    self.breadcrumbs.append(crumb)
                 elif item == 'project':
-                    self.breadcrumbs.append({'title': 'Project: %s' % self.project_name, 
-                                             'url':request.application_url + '/project/%s/experiment' % self.project_name})
-                elif item == 'experiment':
-                    self.breadcrumbs.append({'title': 'Experiment: %s' % self.experiment_name, 
-                                             'url':request.application_url + '/project/%s/experiment/%s/statistics/%s' % (self.project_name, self.experiment_name, self.statistics_name)})
+                    url = '/project/%s/experiment' % self.project_name
+                    crumb = {'title': 'Project: %s' % self.project_name, 
+                             'url':request.application_url + url}
+                    self.breadcrumbs.append(crumb)
+                elif item == 'parameters':
+                    url = '/project/%s/%s/%s/statistics/%s' % (self.project_name, 
+                                                               self.parameter_list, 
+                                                               self.parameter_values, 
+                                                               self.statistics_name)
+                    crumb = {'title': 'Experiment: %s' % self.parameter_values,
+                             'url':request.application_url + url}
+                    self.breadcrumbs.append()
 
-        if not self.experiment_name is None and self.run_name is None:
+        if not self.parameter_list is None and self.run_name is None:
             self.items = {}
             self.items['title'] = 'RNASeq Pipeline Runs'
             self.items['level'] = 'Experiment'
@@ -75,12 +85,24 @@ class Page(BaseFactory):
             self.tabs = []
             for tab in self.layout['tabbed_views']:
                 if self.run_name is None:
-                    url = request.application_url + '/project/%s/experiment/%s/statistics/%s/' % (self.project_name, self.experiment_name, tab)
+                    path = '/project/%s/%s/%s/statistics/%s/' % (self.project_name,
+                                                                 self.parameter_list,
+                                                                 self.parameter_values,
+                                                                 tab)
+                    url = request.application_url + path
                 else:
-                    url = request.application_url + '/project/%s/experiment/%s/run/%s/statistics/%s/' % (self.project_name, self.experiment_name, self.run_name, tab)
-                self.tabs.append({'id':tab, 'title':self.layout[tab]['title'], 'current':tab == self.statistics_name, 'url':url})
+                    path = '/project/%s/%s/%s/run/%s/statistics/%s/' % (self.project_name,
+                                                                        self.parameter_list,
+                                                                        self.parameter_values,
+                                                                        self.run_name,
+                                                                        tab)
+                    url = request.application_url + path
+                self.tabs.append({'id': tab, 
+                                  'title': self.layout[tab]['title'], 
+                                  'current': tab == self.statistics_name, 
+                                  'url':url})
         
-        if self.experiment_name is None:
+        if self.parameter_list is None:
             view = self.layout
         else:
             if self.layout.has_key(self.statistics_name):
@@ -186,8 +208,8 @@ class Page(BaseFactory):
 
     def Title(self):
         title = "Project: %s" % self.project_name
-        if not self.experiment_name is None:
-            title = "Experiment: %s" % self.experiment_name
+        if not self.parameter_values is None:
+            title = "Experiment: %s" % self.parameter_values
         if not self.run_name is None:
             title = "RNASeq Pipeline Run: %s" % self.run_name
         return title

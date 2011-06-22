@@ -41,10 +41,14 @@ class Box(BaseFactory):
                 if not value.replace('_', '').isalnum():
                     raise AttributeError
                 self.project_name = value
-            elif key == 'experiment_name':
+            elif key == 'parameter_list':
                 if not value.replace('-', '').replace('_', '').isalnum():
                     raise AttributeError
-                self.experiment_name = value
+                self.parameter_list = value
+            elif key == 'parameter_values':
+                if not value.replace('-', '').replace('_', '').isalnum():
+                    raise AttributeError
+                self.parameter_values = value
             elif key == 'run_name':
                 if not value.replace('-', '').isalnum():
                     raise AttributeError
