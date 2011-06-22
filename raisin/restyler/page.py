@@ -59,7 +59,7 @@ class Page(BaseFactory):
                                                                self.statistics_name)
                     crumb = {'title': 'Experiment: %s' % self.parameter_values,
                              'url':request.application_url + url}
-                    self.breadcrumbs.append()
+                    self.breadcrumbs.append(crumb)
 
         if not self.parameter_list is None and self.run_name is None:
             self.items = {}
@@ -78,8 +78,8 @@ class Page(BaseFactory):
                 experiment_runs = pickle.loads(experiment_runs)                
             self.items['list'] = []
             for item in experiment_runs['table_data']:
-                self.items['list'].append({'title':item[2], 
-                                           'url':request.application_url + item[3][:-len('overview')] + self.statistics_name})
+                self.items['list'].append({'title':item[3], 
+                                           'url':request.application_url + item[4][:-len('overview')] + self.statistics_name})
 
         if self.layout.has_key('tabbed_views'):
             self.tabs = []
