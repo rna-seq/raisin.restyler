@@ -28,15 +28,8 @@ class Page(BaseFactory):
         if not self.absolute_url.endswith('/'):
             self.absolute_url = self.absolute_url + '/'
 
-        # The layout configures the charts to be shown on the page
-        if self.project_name is None:
-            self.layout = PAGES['homepage']
-        elif self.parameter_list is None:
-            self.layout = PAGES['project']
-        elif self.run_name is None:
-            self.layout = PAGES['experiment_statistics']
-        else:
-            self.layout = PAGES['run_statistics']
+        self.layout_id = request.matched_route.name[len('p1_'):]
+        self.layout = PAGES[self.layout_id]
         
         self.breadcrumbs = []
         if self.layout.has_key('breadcrumbs'):
@@ -59,9 +52,9 @@ class Page(BaseFactory):
                                                                self.statistics_name)
                     crumb = {'title': 'Experiment: %s' % self.parameter_values,
                              'url':request.application_url + url}
-                    self.breadcrumbs.append(crumb)
-
-        if not self.parameter_list is None and self.run_name is None:
+                    self.breadcrumbs.append(crumb)        
+        
+        if self.layout_id == 'experiment_statistics':
             self.items = {}
             self.items['title'] = 'RNASeq Pipeline Runs'
             self.items['level'] = 'Experiment'
@@ -102,13 +95,15 @@ class Page(BaseFactory):
                                   'current': tab == self.statistics_name, 
                                   'url':url})
         
-        if self.parameter_list is None:
+        if self.layout_id in ['homepage', 'project', 'experiment_subset']:
             view = self.layout
-        else:
+        elif self.layout_id in ['experiment_statistics', 'run_statistics']:
             if self.layout.has_key(self.statistics_name):
                 view = self.layout[self.statistics_name]
             else:
                 view = self.layout[self.layout['tabbed_views'][0]]
+        else:
+            raise AttributeError
                        
         # The names in the cells of the layout correspond to the charts 
         cells = []
