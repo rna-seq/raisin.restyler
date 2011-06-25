@@ -16,88 +16,30 @@ class Page(BaseFactory):
 
     def __init__(self, request, ):
         BaseFactory.__init__(self, request)
+        self.layout_id = request.matched_route.name[len('p1_'):]
+        self.layout = PAGES[self.layout_id]
         self.project_name    = request.matchdict.get('project_name',    None)
         self.parameter_list = request.matchdict.get('parameter_list', None)
         self.parameter_values = request.matchdict.get('parameter_values', None)
         self.run_name = request.matchdict.get('run_name', None)
-        if self.run_name is None:
-            self.statistics_name = request.matchdict.get('experiment_statistics_name', None)
-        else:
-            self.statistics_name = request.matchdict.get('run_statistics_name', None)        
+        self.lane_name = request.matchdict.get('lane_name', None)
+        self.statistics_name = request.matchdict.get("%s_name" % self.layout_id, None)
+
         self.absolute_url = urlparse.urljoin(request.application_url, urlparse.urlparse(request.url).path)
         if not self.absolute_url.endswith('/'):
             self.absolute_url = self.absolute_url + '/'
 
-        self.layout_id = request.matched_route.name[len('p1_'):]
-        self.layout = PAGES[self.layout_id]
-        
-        self.breadcrumbs = []
-        if self.layout.has_key('breadcrumbs'):
-            if type(self.layout['breadcrumbs']) == type(''):
-                self.layout['breadcrumbs']=[self.layout['breadcrumbs']]
-            for item in self.layout['breadcrumbs']:
-                if item == 'homepage':
-                    url = request.application_url + '/'
-                    crumb = {'title': 'Projects', 'url':url}
-                    self.breadcrumbs.append(crumb)
-                elif item == 'project':
-                    url = '/project/%s/experiment' % self.project_name
-                    crumb = {'title': 'Project: %s' % self.project_name, 
-                             'url':request.application_url + url}
-                    self.breadcrumbs.append(crumb)
-                elif item == 'parameters':
-                    url = '/project/%s/%s/%s/statistics/%s' % (self.project_name, 
-                                                               self.parameter_list, 
-                                                               self.parameter_values, 
-                                                               self.statistics_name)
-                    crumb = {'title': 'Experiment: %s' % self.parameter_values,
-                             'url':request.application_url + url}
-                    self.breadcrumbs.append(crumb)        
+        self.breadcrumbs = self.get_breadcrumbs(request)
         
         if self.layout_id == 'experiment_statistics':
-            self.items = {}
-            self.items['title'] = 'RNASeq Pipeline Runs'
-            self.items['level'] = 'Experiment'
-            self.items['toggle'] = 'Show the individual %s for this %s' % (self.items['title'], self.items['level'])
-            experiment_runs = get_resource_directly('experiment_runs', PICKLED, request.matchdict)
-            if experiment_runs is None:
-                experiment_runs = {'table_data':[], 
-                                   'table_description': [('Project Id', 'string'), 
-                                                         ('Experiment Id', 'string'), 
-                                                         ('Run Id', 'string'), 
-                                                         ('Run Url', 'string')]
-                                   }
-            else:
-                experiment_runs = pickle.loads(experiment_runs)                
-            self.items['list'] = []
-            for item in experiment_runs['table_data']:
-                self.items['list'].append({'title':item[3], 
-                                           'url':request.application_url + item[4][:-len('overview')] + self.statistics_name})
+            self.items = self.get_items(request)
 
         if self.layout.has_key('tabbed_views'):
-            self.tabs = []
-            for tab in self.layout['tabbed_views']:
-                if self.run_name is None:
-                    path = '/project/%s/%s/%s/statistics/%s/' % (self.project_name,
-                                                                 self.parameter_list,
-                                                                 self.parameter_values,
-                                                                 tab)
-                    url = request.application_url + path
-                else:
-                    path = '/project/%s/%s/%s/run/%s/statistics/%s/' % (self.project_name,
-                                                                        self.parameter_list,
-                                                                        self.parameter_values,
-                                                                        self.run_name,
-                                                                        tab)
-                    url = request.application_url + path
-                self.tabs.append({'id': tab, 
-                                  'title': self.layout[tab]['title'], 
-                                  'current': tab == self.statistics_name, 
-                                  'url':url})
+            self.tabs = self.get_tabs(request)
         
         if self.layout_id in ['homepage', 'project', 'experiment_subset']:
             view = self.layout
-        elif self.layout_id in ['experiment_statistics', 'run_statistics']:
+        elif self.layout_id in ['experiment_statistics', 'run_statistics', 'lane_statistics']:
             if self.layout.has_key(self.statistics_name):
                 view = self.layout[self.statistics_name]
             else:
@@ -208,3 +150,88 @@ class Page(BaseFactory):
         if not self.run_name is None:
             title = "RNASeq Pipeline Run: %s" % self.run_name
         return title
+        
+    def get_breadcrumbs(self, request):
+        breadcrumbs = []
+        if self.layout.has_key('breadcrumbs'):
+            if type(self.layout['breadcrumbs']) == type(''):
+                self.layout['breadcrumbs']=[self.layout['breadcrumbs']]
+            for item in self.layout['breadcrumbs']:
+                if item == 'homepage':
+                    url = request.application_url + '/'
+                    crumb = {'title': 'Projects', 'url':url}
+                    breadcrumbs.append(crumb)
+                elif item == 'project':
+                    url = '/project/%s/experiment' % self.project_name
+                    crumb = {'title': 'Project: %s' % self.project_name, 
+                             'url':request.application_url + url}
+                    breadcrumbs.append(crumb)
+                elif item == 'parameters':
+                    url = '/project/%s/%s/%s/statistics/%s' % (self.project_name, 
+                                                               self.parameter_list, 
+                                                               self.parameter_values, 
+                                                               self.statistics_name)
+                    crumb = {'title': 'Experiment: %s' % self.parameter_values,
+                             'url':request.application_url + url}
+                    breadcrumbs.append(crumb)        
+                elif item == 'run':
+                    url = '/project/%s/%s/%s/run/%s/statistics/%s' % (self.project_name, 
+                                                                      self.parameter_list, 
+                                                                      self.parameter_values, 
+                                                                      self.run_name,
+                                                                      self.statistics_name)
+                    crumb = {'title': 'Run: %s' % self.run_name,
+                             'url':request.application_url + url}
+                    breadcrumbs.append(crumb)        
+        return breadcrumbs
+
+    def get_items(self, request):
+        items = {}
+        items['title'] = 'RNASeq Pipeline Runs'
+        items['level'] = 'Experiment'
+        items['toggle'] = 'Show the individual %s for this %s' % (items['title'], items['level'])
+        experiment_runs = get_resource_directly('experiment_runs', PICKLED, request.matchdict)
+        if experiment_runs is None:
+            experiment_runs = {'table_data':[], 
+                               'table_description': [('Project Id', 'string'), 
+                                                     ('Experiment Id', 'string'), 
+                                                     ('Run Id', 'string'), 
+                                                     ('Run Url', 'string')]
+                               }
+        else:
+            experiment_runs = pickle.loads(experiment_runs)                
+        items['list'] = []
+        for item in experiment_runs['table_data']:
+            items['list'].append({'title':item[3], 
+                                  'url':request.application_url + item[4][:-len('overview')] + self.statistics_name})
+        return items
+
+    def get_tabs(self, request):
+        tabs = []
+        for tab in self.layout['tabbed_views']:
+            if self.layout_id == 'experiment_statistics':
+                path = '/project/%s/%s/%s/statistics/%s/' % (self.project_name,
+                                                             self.parameter_list,
+                                                             self.parameter_values,
+                                                             tab)
+                url = request.application_url + path
+            elif self.layout_id == 'run_statistics':
+                path = '/project/%s/%s/%s/run/%s/statistics/%s/' % (self.project_name,
+                                                                    self.parameter_list,
+                                                                    self.parameter_values,
+                                                                    self.run_name,
+                                                                    tab)
+                url = request.application_url + path
+            elif self.layout_id == 'lane_statistics':
+                path = '/project/%s/%s/%s/run/%s/lane/%s/statistics/%s/' % (self.project_name,
+                                                                            self.parameter_list,
+                                                                            self.parameter_values,
+                                                                            self.run_name,
+                                                                            self.lane_name,
+                                                                            tab)
+                url = request.application_url + path
+            tabs.append({'id': tab, 
+                         'title': self.layout[tab]['title'], 
+                         'current': tab == self.statistics_name, 
+                         'url':url})
+        return tabs
