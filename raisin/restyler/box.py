@@ -53,14 +53,22 @@ class Box(BaseFactory):
                 if not value.replace('-', '').isalnum():
                     raise AttributeError
                 self.run_name = value
+            elif key == 'lane_name':
+                if not value.replace('-', '').isalnum():
+                    raise AttributeError
+                self.lane_name = value
             elif key == 'experiment_statistics_name':
                 if not value in ('overview', 'read', 'mapping', 'expression', 'splicing', 'discovery'):
-                    raise AttributeError    
+                    raise AttributeError
                 self.experiment_statistics_name = value
             elif key == 'run_statistics_name':
                 if not value in ('overview', 'read', 'mapping', 'expression', 'splicing', 'discovery'):
-                    raise AttributeError    
+                    raise AttributeError
                 self.run_statistics_name = value
+            elif key == 'lane_statistics_name':
+                if not value in ('overview', 'read', 'mapping', 'expression', 'splicing', 'discovery'):
+                    raise AttributeError
+                self.lane_statistics_name = value
             else:
                 print key, value
                 raise AttributeError               
