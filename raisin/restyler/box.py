@@ -58,7 +58,7 @@ class Box(BaseFactory):
                     raise AttributeError
                 self.lane_name = value
             elif key == 'experiment_statistics_name':
-                if not value in ('overview', 'read', 'mapping', 'expression', 'splicing', 'discovery'):
+                if not value in ('experiments', 'overview', 'read', 'mapping', 'expression', 'splicing', 'discovery'):
                     raise AttributeError
                 self.experiment_statistics_name = value
             elif key == 'run_statistics_name':
