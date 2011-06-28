@@ -33,13 +33,13 @@ class Page(BaseFactory):
         
         if self.layout_id == 'experiment_statistics':
             self.items = self.get_items(request)
-
+        
         if self.layout.has_key('tabbed_views'):
             self.tabs = self.get_tabs(request)
         
-        if self.layout_id in ['homepage', 'project', 'experiment_subset']:
+        if self.layout_id in ['homepage', 'experiment_subset']:
             view = self.layout
-        elif self.layout_id in ['experiment_statistics', 'run_statistics', 'lane_statistics']:
+        elif self.layout_id in ['project_statistics', 'experiment_statistics', 'run_statistics', 'lane_statistics']:
             if self.layout.has_key(self.statistics_name):
                 view = self.layout[self.statistics_name]
             else:
@@ -146,12 +146,8 @@ class Page(BaseFactory):
     def Title(self):
         title = "Project: %s" % self.project_name
         if self.layout_id == 'experiment_subset':
-
-
             title = "Subset: %s" % self.parameter_values
-            
-            
-        elif self.layout_id in ['homepage', 'project', 'experiment_subset', 'experiment_statistics', 'run_statistics', 'lane_statistics']:
+        elif self.layout_id in ['homepage', 'experiment_subset', 'project_statistics', 'experiment_statistics', 'run_statistics', 'lane_statistics']:
             if not self.parameter_values is None:
                 title = "Experiment: %s" % self.parameter_values
             if not self.run_name is None:
@@ -171,7 +167,7 @@ class Page(BaseFactory):
                     crumb = {'title': 'Projects', 'url':url}
                     breadcrumbs.append(crumb)
                 elif item == 'project':
-                    url = '/project/%s/experiment' % self.project_name
+                    url = '/project/%s/statistics/experiments/' % self.project_name
                     crumb = {'title': 'Project: %s' % self.project_name, 
                              'url':request.application_url + url}
                     breadcrumbs.append(crumb)
@@ -218,7 +214,11 @@ class Page(BaseFactory):
     def get_tabs(self, request):
         tabs = []
         for tab in self.layout['tabbed_views']:
-            if self.layout_id == 'experiment_statistics':
+            if self.layout_id == 'project_statistics':
+                path = '/project/%s/statistics/%s/' % (self.project_name,
+                                                       tab)
+                url = request.application_url + path
+            elif self.layout_id == 'experiment_statistics':
                 path = '/project/%s/%s/%s/statistics/%s/' % (self.project_name,
                                                              self.parameter_list,
                                                              self.parameter_values,
@@ -239,6 +239,8 @@ class Page(BaseFactory):
                                                                             self.lane_name,
                                                                             tab)
                 url = request.application_url + path
+            else:
+                raise AttributeError
             tabs.append({'id': tab, 
                          'title': self.layout[tab]['title'], 
                          'current': tab == self.statistics_name, 
