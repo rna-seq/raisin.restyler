@@ -145,10 +145,19 @@ class Page(BaseFactory):
 
     def Title(self):
         title = "Project: %s" % self.project_name
-        if not self.parameter_values is None:
-            title = "Experiment: %s" % self.parameter_values
-        if not self.run_name is None:
-            title = "RNASeq Pipeline Run: %s" % self.run_name
+        if self.layout_id == 'experiment_subset':
+
+
+            title = "Subset: %s" % self.parameter_values
+            
+            
+        elif self.layout_id in ['homepage', 'project', 'experiment_subset', 'experiment_statistics', 'run_statistics', 'lane_statistics']:
+            if not self.parameter_values is None:
+                title = "Experiment: %s" % self.parameter_values
+            if not self.run_name is None:
+                title = "RNASeq Pipeline Run: %s" % self.run_name
+        else:
+            raise AttributeError
         return title
         
     def get_breadcrumbs(self, request):
