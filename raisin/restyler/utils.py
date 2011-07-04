@@ -135,3 +135,7 @@ def get_chart_infos(resources, kw):
 def get_resource_directly(name, content_type, kw):
     uri = RESOURCES[name]['uri'] % kw
     return resource.get(uri, content_type)
+    
+def get_resource_by_url(url, content_type):
+    return resource.get(url, content_type)
+    
