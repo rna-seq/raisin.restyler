@@ -88,7 +88,7 @@ def render_description(request, description, description_type):
         if rendered:
             rendered = ['<br />'] + rendered
     
-    rendered ='\n'.join(rendered) 
+    rendered = '\n'.join(rendered) 
     return rendered
     
 def get_chart_infos(resources, kw):
