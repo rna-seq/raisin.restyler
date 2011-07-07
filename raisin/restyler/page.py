@@ -24,8 +24,10 @@ class Page(BaseFactory):
         self.run_name = request.matchdict.get('run_name', None)
         self.lane_name = request.matchdict.get('lane_name', None)
         self.statistics_name = request.matchdict.get("%s_name" % self.layout_id, None)
-
-        self.absolute_url = urlparse.urljoin(request.application_url, urlparse.urlparse(request.url).path)
+        
+        # pylint: disable-msg=E1101
+        # no error
+        self.absolute_url = urlparse.urljoin(request.application_url, urlparse.urlparse(request.url).path) 
         if not self.absolute_url.endswith('/'):
             self.absolute_url = self.absolute_url + '/'
 
