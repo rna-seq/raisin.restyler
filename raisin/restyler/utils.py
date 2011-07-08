@@ -1,5 +1,4 @@
 import pickle
-from urlparse import urlparse
 from zope.pagetemplate.pagetemplatefile import PageTemplateFile
 
 from raisin.restkit import resource
