@@ -1,4 +1,3 @@
-import os
 from basefactory import BaseFactory
 from config import JSON
 from config import CSV
@@ -9,7 +8,6 @@ from utils import get_chart_infos
 from utils import get_resource_directly
 from raisin.box import resources_registry
 from raisin.box import BOXES
-from raisin.resource.root import stats_registry
 
 class Box(BaseFactory):
     """
@@ -80,7 +78,6 @@ class Box(BaseFactory):
 
         if self.chart_format == 'html':            
             packages = set(['corechart'])
-            charts = []
             chart_infos = get_chart_infos([self.resource], request.matchdict)
             if len(chart_infos) == 0:
                 raise AttributeError
@@ -91,7 +88,7 @@ class Box(BaseFactory):
                 if chart.has_key('charttype') and chart.has_key('data'):
                     if chart['charttype'] == 'Table':
                         packages.add(chart['charttype'].lower())
-                    self.javascript = render_javascript([chart,], packages)
+                    self.javascript = render_javascript([chart, ], packages)
     
             # Render the chart to JSon
             if not chart.has_key(JSON) or chart[JSON] is None:
