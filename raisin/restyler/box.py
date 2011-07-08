@@ -95,9 +95,9 @@ class Box(BaseFactory):
     
             # Render the chart to JSon
             if not chart.has_key(JSON) or chart[JSON] is None:
-                 pass
+                pass
             elif not chart.has_key('charttype'):
-                 pass
+                pass
             else:
                 chart['data'] = chart[JSON]
                 # Prepare the packages that need to be loaded for google chart tools 
