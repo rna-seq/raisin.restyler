@@ -137,7 +137,7 @@ class Page(BaseFactory):
                         chart['html_download_url'] = self.absolute_url + "%s.html" % chart['id']
             chart['module_id'] = self.columns_for_cells[chart['id']]
             if self.new_row_for_cells.get(chart['id'], False):
-                chart['module_style'] = style="clear: both;"
+                chart['module_style'] = "clear: both;"
             else:
                 chart['module_style'] = ""
             chart['description_rendered'] = render_description(request, chart.get('description', ''), chart.get('description_type', ''))
@@ -162,7 +162,7 @@ class Page(BaseFactory):
         breadcrumbs = []
         if self.layout.has_key('breadcrumbs'):
             if type(self.layout['breadcrumbs']) == type(''):
-                self.layout['breadcrumbs']=[self.layout['breadcrumbs']]
+                self.layout['breadcrumbs'] = [self.layout['breadcrumbs']]
             for item in self.layout['breadcrumbs']:
                 if item == 'homepage':
                     url = request.application_url + '/'
