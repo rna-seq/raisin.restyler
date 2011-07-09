@@ -5,12 +5,12 @@ from raisin.restkit import resource
 from raisin.box import RESOURCES
 from raisin.box import BOXES
 
-from config import PICKLED    
+from config import PICKLED
 
 def render_javascript(charts, packages):
     pt = PageTemplateFile('templates/javascript.pt')
-    context = {'packages':"'%s'" % ','.join(packages),
-               'charts':charts}    
+    context = {'packages': "'%s'" % ','.join(packages),
+               'charts': charts}
     return pt.pt_render(namespace=context)
 
 def render_chartoptions(chartoptions):
@@ -22,12 +22,12 @@ def render_chartoptions(chartoptions):
         rendered += "%s: " % key
         if key in ['height', 'width', 'max', 'min', 'pointSize', 'lineSize', 'legendFontSize', 'pageSize', 'lineWidth', 'hAxis', 'vAxis']:
             rendered += "%s" % value
-        elif key in ['isStacked', 'is3D', 'smoothLine', 'showRowNumber', 'allowHtml','chartArea']:
+        elif key in ['isStacked', 'is3D', 'smoothLine', 'showRowNumber', 'allowHtml', 'chartArea']:
             rendered += "%s" % str(value).lower()                
-        elif key in ['titleX', 'titleY', 'legend', 'page','curveType', 'title']:
-            rendered += "'%s'" % value  
-        elif key in ['colors',]:
-            rendered += str(value)                      
+        elif key in ['titleX', 'titleY', 'legend', 'page', 'curveType', 'title']:
+            rendered += "'%s'" % value
+        elif key in ['colors', ]:
+            rendered += str(value)
         else:
             print key, value, type(value)
             raise AttributeError        
@@ -95,7 +95,7 @@ def get_chart_infos(resources, kw):
     for chart_name, method, predefined_content_types in resources:
         # Fill an empty chart with the statistics resources based on the wanted content types
         chart = BOXES[chart_name].copy()
-        if not chart.has_key('id'):
+        if not 'id' in chart:
             # At least put in a default id
             chart['id'] = chart_name
         kw['chart_name'] = chart_name
@@ -125,9 +125,10 @@ def get_chart_infos(resources, kw):
                     chart[content_type] = result
                     successful_content_types.append(content_type)
                 
-        charts.append({'chart':chart, 'method':method, 
-                       'successful_content_types':successful_content_types,
-                       'predefined_content_types':predefined_content_types})
+        charts.append({'chart': chart,
+                       'method': method,
+                       'successful_content_types': successful_content_types,
+                       'predefined_content_types': predefined_content_types})
     
     return charts
     
