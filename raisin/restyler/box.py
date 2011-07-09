@@ -9,6 +9,7 @@ from utils import get_resource_directly
 from raisin.box import resources_registry
 from raisin.box import BOXES
 
+
 class Box(BaseFactory):
     """
     Shows one box on the page.
@@ -21,8 +22,8 @@ class Box(BaseFactory):
         BaseFactory.__init__(self, request)
         self.charts = None
         self.chart_type = None
-        
-        # Check input coming from URl, preventing SQL injections and access to unintended files            
+
+        # Check input coming from URl, preventing SQL injections and access to unintended files
         for key, value in request.matchdict.items():
             if key == 'box_id_with_extension':
                 if '.' in value:
@@ -69,14 +70,14 @@ class Box(BaseFactory):
                 self.lane_statistics_name = value
             else:
                 print key, value
-                raise AttributeError               
-            
+                raise AttributeError
+
         # Go through the registry, and take only the resources that are referenced from the cells of the layout
         for resource in resources_registry:
             if resource[0] == self.chart_name:
                 self.resource = resource
 
-        if self.chart_format == 'html':            
+        if self.chart_format == 'html':
             packages = set(['corechart'])
             chart_infos = get_chart_infos([self.resource], request.matchdict)
             if len(chart_infos) == 0:
@@ -85,11 +86,11 @@ class Box(BaseFactory):
                 chart = chart_info['chart']
                 method = chart_info['method']
                 method(self, chart)
-                if chart.has_key('charttype') and chart.has_key('data'):
+                if 'charttype' in chart and 'data' in chart:
                     if chart['charttype'] == 'Table':
                         packages.add(chart['charttype'].lower())
                     self.javascript = render_javascript([chart, ], packages)
-    
+
             # Render the chart to JSon
             if not chart.has_key(JSON) or chart[JSON] is None:
                 pass
@@ -136,4 +137,3 @@ class Box(BaseFactory):
         else:
             print "Format not supported %s" % self.chart_format 
             raise AttributeError
-            
