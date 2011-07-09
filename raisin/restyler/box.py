@@ -92,31 +92,31 @@ class Box(BaseFactory):
                     self.javascript = render_javascript([chart, ], packages)
 
             # Render the chart to JSon
-            if not chart.has_key(JSON) or chart[JSON] is None:
+            if not JSON in chart or chart[JSON] is None:
                 pass
-            elif not chart.has_key('charttype'):
+            elif not 'charttype' in chart:
                 pass
             else:
                 chart['data'] = chart[JSON]
-                # Prepare the packages that need to be loaded for google chart tools 
+                # Prepare the packages that need to be loaded for google chart tools
                 if chart['charttype'] == 'Table':
                     packages.add(chart['charttype'].lower())
                 chart['chartoptions']['is3D'] = False
-                chart['chartoptions_rendered'] = render_chartoptions(chart['chartoptions'])        
-            chart['description_rendered'] = render_description(request, 
-                                                               chart.get('description', ''), 
-                                                               chart.get('description_type', ''))                                        
-            if chart.has_key('chartoptions'):
+                chart['chartoptions_rendered'] = render_chartoptions(chart['chartoptions'])
+            chart['description_rendered'] = render_description(request,
+                                                               chart.get('description', ''),
+                                                               chart.get('description_type', ''))
+            if 'chartoptions' in chart:
                 # Depending on the chart type different JavaScript libraries need to be used
                 self.chart_type = chart['charttype']
-    
+
                 # Sometimes it is necessary to override the width and height completely from
                 # the outside by just passing the width and height through the url
                 # This is useful when doing screenshots.
-                if request.queryvars.has_key('width'):
+                if 'width' in request.queryvars:
                     # width can be overridden from the request query
                     chart['chartoptions']['width'] = int(request.queryvars['width'])
-                if request.queryvars.has_key('height'):
+                if 'height' in request.queryvars:
                     # height can be overridden from the request query
                     chart['chartoptions']['height'] = int(request.queryvars['height'])
 
@@ -135,5 +135,5 @@ class Box(BaseFactory):
         elif self.chart_format == 'ico':
             self.body = ""
         else:
-            print "Format not supported %s" % self.chart_format 
+            print "Format not supported %s" % self.chart_format
             raise AttributeError
