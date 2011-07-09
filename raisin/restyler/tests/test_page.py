@@ -2,21 +2,24 @@ import sys
 import unittest
 from raisin.restyler import page
 
-class ResourceTest(unittest.TestCase):    
+
+class ResourceTest(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
-        
+
     def test_page(self):
         self.failUnless(DBS[None] == self.dummy_db)
+
 
 # make the test suite.
 def suite():
     loader = unittest.TestLoader()
     testsuite = loader.loadTestsFromTestCase(ResourceTest)
     return testsuite
+
 
 # Make the test suite; run the tests.
 def test_main():
