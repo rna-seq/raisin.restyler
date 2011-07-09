@@ -7,11 +7,13 @@ from raisin.box import BOXES
 
 from config import PICKLED
 
+
 def render_javascript(charts, packages):
     pt = PageTemplateFile('templates/javascript.pt')
     context = {'packages': "'%s'" % ','.join(packages),
                'charts': charts}
     return pt.pt_render(namespace=context)
+
 
 def render_chartoptions(chartoptions):
     rendered = ""
@@ -23,20 +25,21 @@ def render_chartoptions(chartoptions):
         if key in ['height', 'width', 'max', 'min', 'pointSize', 'lineSize', 'legendFontSize', 'pageSize', 'lineWidth', 'hAxis', 'vAxis']:
             rendered += "%s" % value
         elif key in ['isStacked', 'is3D', 'smoothLine', 'showRowNumber', 'allowHtml', 'chartArea']:
-            rendered += "%s" % str(value).lower()                
+            rendered += "%s" % str(value).lower()
         elif key in ['titleX', 'titleY', 'legend', 'page', 'curveType', 'title']:
             rendered += "'%s'" % value
         elif key in ['colors', ]:
             rendered += str(value)
         else:
             print key, value, type(value)
-            raise AttributeError        
+            raise AttributeError
     return rendered
+
 
 def render_description(request, description, description_type):
     rendered = []
     if description is None or description == []:
-        description = "" 
+        description = ""
     if description_type == 'infotext':
         # Render body text as infotext
         rendered.append('<br />')
@@ -66,7 +69,7 @@ def render_description(request, description, description_type):
             link = request.application_url + line['URL']
             rendered.append("""<a href="%s">%s</a>""" % (link, line['Project Id']))
             rendered.append("""</li>""")
-        rendered.append('</ul>')        
+        rendered.append('</ul>')
     else:
         in_list = False
         for line in description.split('\n'):
@@ -76,7 +79,7 @@ def render_description(request, description, description_type):
                 if not in_list:
                     rendered.append("<ul>")
                     in_list = True
-            else:    
+            else:
                 if in_list:
                     rendered.append("</ul>")
                 in_list = False
@@ -86,10 +89,11 @@ def render_description(request, description, description_type):
                 rendered.append('<p class="infotext">%s</p>' % line)
         if rendered:
             rendered = ['<br />'] + rendered
-    
-    rendered = '\n'.join(rendered) 
+
+    rendered = '\n'.join(rendered)
     return rendered
-    
+
+
 def get_chart_infos(resources, kw):
     charts = []
     for chart_name, method, predefined_content_types in resources:
@@ -124,18 +128,19 @@ def get_chart_infos(resources, kw):
                 if not result is None:
                     chart[content_type] = result
                     successful_content_types.append(content_type)
-                
+
         charts.append({'chart': chart,
                        'method': method,
                        'successful_content_types': successful_content_types,
                        'predefined_content_types': predefined_content_types})
-    
+
     return charts
-    
+
+
 def get_resource_directly(name, content_type, kw):
     uri = RESOURCES[name]['uri'] % kw
     return resource.get(uri, content_type)
-    
+
+
 def get_resource_by_url(url, content_type):
     return resource.get(url, content_type)
-    
