@@ -210,8 +210,13 @@ class Page(BaseFactory):
             experiment_runs = pickle.loads(experiment_runs)
         items['list'] = []
         for item in experiment_runs['table_data']:
-            items['list'].append({'title': item[3],
-                                  'url': request.application_url + item[4][:-len('overview')] + self.statistics_name})
+            url = request.application_url + item[4]
+            if self.statistics_name == 'experiments':
+                items['list'].append({'title': item[3],
+                                      'url': url})
+            else:
+                items['list'].append({'title': item[3],
+                                      'url': url[:-len('overview')] + self.statistics_name})
         return items
 
     def get_tabs(self, request):
