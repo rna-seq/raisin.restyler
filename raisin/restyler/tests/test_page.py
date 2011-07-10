@@ -11,7 +11,7 @@ class ResourceTest(unittest.TestCase):
         unittest.TestCase.tearDown(self)
 
     def test_page(self):
-        self.failUnless(DBS[None] == self.dummy_db)
+        page.Page({})
 
 
 # make the test suite.
