@@ -56,6 +56,10 @@ class Box(BaseFactory):
                 if not value.replace('-', '').isalnum():
                     raise AttributeError
                 self.lane_name = value
+            elif key == 'project_statistics_name':
+                if not value in ('experiments', 'downloads'):
+                    raise AttributeError
+                self.project_statistics_name = value
             elif key == 'experiment_statistics_name':
                 if not value in ('experiments', 'overview', 'read', 'mapping', 'expression', 'splicing', 'discovery'):
                     raise AttributeError
@@ -113,12 +117,12 @@ class Box(BaseFactory):
                 # Sometimes it is necessary to override the width and height completely from
                 # the outside by just passing the width and height through the url
                 # This is useful when doing screenshots.
-                if 'width' in request.queryvars:
+                if 'width' in request.GET:
                     # width can be overridden from the request query
-                    chart['chartoptions']['width'] = int(request.queryvars['width'])
-                if 'height' in request.queryvars:
+                    chart['chartoptions']['width'] = int(request.GET['width'])
+                if 'height' in request.GET:
                     # height can be overridden from the request query
-                    chart['chartoptions']['height'] = int(request.queryvars['height'])
+                    chart['chartoptions']['height'] = int(request.GET['height'])
 
                 # Now render the chart options with the new values
                 chart['chartoptions_rendered'] = render_chartoptions(chart['chartoptions'])
