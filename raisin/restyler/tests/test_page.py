@@ -25,7 +25,7 @@ def suite():
 def test_main():
     testsuite = suite()
     runner = unittest.TextTestRunner(sys.stdout, verbosity=2)
-    result = runner.run(testsuite)
+    runner.run(testsuite)
 
 if __name__ == "__main__":
     test_main()
