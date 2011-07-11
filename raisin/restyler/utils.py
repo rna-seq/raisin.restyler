@@ -112,9 +112,7 @@ def get_chart_infos(context, request):
                 raise
             if content_type == PICKLED:
                 pick = resource.get(uri, content_type)
-                if pick is None:
-                    pass
-                else:
+                if not pick is None:
                     chart[content_type] = pickle.loads(pick)
                     successful_content_types.append(content_type)
             else:
@@ -123,10 +121,11 @@ def get_chart_infos(context, request):
                     chart[content_type] = result
                     successful_content_types.append(content_type)
 
-        charts.append({'chart': chart,
-                       'method': method,
-                       'successful_content_types': successful_content_types,
-                       'predefined_content_types': predefined_content_types})
+        if len(successful_content_types) == len(predefined_content_types):
+            charts.append({'chart': chart,
+                           'method': method,
+                           'successful_content_types': successful_content_types,
+                           'predefined_content_types': predefined_content_types})
 
     return charts
 
