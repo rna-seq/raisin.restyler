@@ -24,7 +24,7 @@ class Page(BaseFactory):
         self.parameter_values = request.matchdict.get('parameter_values', None)
         self.run_name = request.matchdict.get('run_name', None)
         self.lane_name = request.matchdict.get('lane_name', None)
-        self.statistics_name = request.matchdict.get("%s_name" % self.layout_id, None)
+        self.tab_name = request.matchdict.get("tab_name", None)
 
         # pylint: disable-msg=E1101
         # no error
@@ -34,7 +34,7 @@ class Page(BaseFactory):
 
         self.breadcrumbs = self.get_breadcrumbs(request)
 
-        if self.layout_id == 'experiment_statistics':
+        if self.layout_id == 'experiment':
             self.items = self.get_items(request)
 
         if 'tabbed_views' in self.layout:
@@ -42,9 +42,9 @@ class Page(BaseFactory):
 
         if self.layout_id in ['homepage', 'experiment_subset']:
             view = self.layout
-        elif self.layout_id in ['project_statistics', 'experiment_statistics', 'run_statistics', 'lane_statistics']:
-            if self.statistics_name in self.layout:
-                view = self.layout[self.statistics_name]
+        elif self.layout_id in ['project', 'experiment', 'run', 'lane']:
+            if self.tab_name in self.layout:
+                view = self.layout[self.tab_name]
             else:
                 view = self.layout[self.layout['tabbed_views'][0]]
         else:
@@ -110,9 +110,7 @@ class Page(BaseFactory):
     def get_packages_and_charts(self, request):
         packages = set(['corechart'])
         charts = []
-        # We need a generic way of getting the variables encoded in the url
-        # Fortunately repoze.bfg provides them for us in request.urlvars:
-        chart_infos = get_chart_infos(self.resources, request.matchdict)
+        chart_infos = get_chart_infos(self, request)
         for chart_info in chart_infos:
             chart = chart_info['chart']
             method = chart_info['method']
@@ -150,7 +148,7 @@ class Page(BaseFactory):
         title = "Project: %s" % self.project_name
         if self.layout_id == 'experiment_subset':
             title = "Subset: %s" % self.parameter_values
-        elif self.layout_id in ['homepage', 'experiment_subset', 'project_statistics', 'experiment_statistics', 'run_statistics', 'lane_statistics']:
+        elif self.layout_id in ['homepage', 'experiment_subset', 'project', 'experiment', 'run', 'lane']:
             if not self.parameter_values is None:
                 title = "Experiment: %s" % self.parameter_values
             if not self.run_name is None:
@@ -170,24 +168,24 @@ class Page(BaseFactory):
                     crumb = {'title': 'Projects', 'url': url}
                     breadcrumbs.append(crumb)
                 elif item == 'project':
-                    url = '/project/%s/statistics/experiments/' % self.project_name
+                    url = '/project/%s/tab/experiments/' % self.project_name
                     crumb = {'title': 'Project: %s' % self.project_name,
                              'url': request.application_url + url}
                     breadcrumbs.append(crumb)
                 elif item == 'parameters':
-                    url = '/project/%s/%s/%s/statistics/%s' % (self.project_name,
+                    url = '/project/%s/%s/%s/tab/%s' % (self.project_name,
                                                                self.parameter_list,
                                                                self.parameter_values,
-                                                               self.statistics_name)
+                                                               self.tab_name)
                     crumb = {'title': 'Experiment: %s' % self.parameter_values,
                              'url': request.application_url + url}
                     breadcrumbs.append(crumb)
                 elif item == 'run':
-                    url = '/project/%s/%s/%s/run/%s/statistics/%s' % (self.project_name,
+                    url = '/project/%s/%s/%s/run/%s/tab/%s' % (self.project_name,
                                                                       self.parameter_list,
                                                                       self.parameter_values,
                                                                       self.run_name,
-                                                                      self.statistics_name)
+                                                                      self.tab_name)
                     crumb = {'title': 'Run: %s' % self.run_name,
                              'url': request.application_url + url}
                     breadcrumbs.append(crumb)
@@ -211,36 +209,36 @@ class Page(BaseFactory):
         items['list'] = []
         for item in experiment_runs['table_data']:
             url = request.application_url + item[4]
-            if self.statistics_name == 'experiments':
+            if self.tab_name == 'experiments':
                 items['list'].append({'title': item[3],
                                       'url': url})
             else:
                 items['list'].append({'title': item[3],
-                                      'url': url[:-len('overview')] + self.statistics_name})
+                                      'url': url[:-len('overview')] + self.tab_name})
         return items
 
     def get_tabs(self, request):
         tabs = []
         for tab in self.layout['tabbed_views']:
-            if self.layout_id == 'project_statistics':
-                path = '/project/%s/statistics/%s/' % (self.project_name,
+            if self.layout_id == 'project':
+                path = '/project/%s/tab/%s/' % (self.project_name,
                                                        tab)
                 url = request.application_url + path
-            elif self.layout_id == 'experiment_statistics':
-                path = '/project/%s/%s/%s/statistics/%s/' % (self.project_name,
+            elif self.layout_id == 'experiment':
+                path = '/project/%s/%s/%s/tab/%s/' % (self.project_name,
                                                              self.parameter_list,
                                                              self.parameter_values,
                                                              tab)
                 url = request.application_url + path
-            elif self.layout_id == 'run_statistics':
-                path = '/project/%s/%s/%s/run/%s/statistics/%s/' % (self.project_name,
+            elif self.layout_id == 'run':
+                path = '/project/%s/%s/%s/run/%s/tab/%s/' % (self.project_name,
                                                                     self.parameter_list,
                                                                     self.parameter_values,
                                                                     self.run_name,
                                                                     tab)
                 url = request.application_url + path
-            elif self.layout_id == 'lane_statistics':
-                path = '/project/%s/%s/%s/run/%s/lane/%s/statistics/%s/' % (self.project_name,
+            elif self.layout_id == 'lane':
+                path = '/project/%s/%s/%s/run/%s/lane/%s/tab/%s/' % (self.project_name,
                                                                             self.parameter_list,
                                                                             self.parameter_values,
                                                                             self.run_name,
@@ -251,6 +249,6 @@ class Page(BaseFactory):
                 raise AttributeError
             tabs.append({'id': tab,
                          'title': self.layout[tab]['title'],
-                         'current': tab == self.statistics_name,
+                         'current': tab == self.tab_name,
                          'url': url})
         return tabs
