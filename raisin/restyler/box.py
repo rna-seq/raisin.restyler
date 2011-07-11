@@ -23,67 +23,20 @@ class Box(BaseFactory):
         self.charts = None
         self.chart_type = None
 
-        # Check input coming from URl, preventing SQL injections and access to unintended files
         for key, value in request.matchdict.items():
-            if key == 'box_id_with_extension':
-                if '.' in value:
-                    self.chart_name, self.chart_format = value.split('.')
-                else:
-                    self.chart_name = None
-                    self.chart_format = None
-                if not self.chart_name in BOXES.keys():
-                    print self.chart_name
-                    raise AttributeError
-                if not self.chart_format in ['html', 'csv', 'json']:
-                    raise AttributeError
-            elif key == 'project_name':
-                if not value.replace('_', '').isalnum():
-                    raise AttributeError
-                self.project_name = value
-            elif key == 'parameter_list':
-                if not value.replace('-', '').replace('_', '').isalnum():
-                    raise AttributeError
-                self.parameter_list = value
-            elif key == 'parameter_values':
-                if not value.replace('-', '').replace('_', '').isalnum():
-                    raise AttributeError
-                self.parameter_values = value
-            elif key == 'run_name':
-                if not value.replace('-', '').isalnum():
-                    raise AttributeError
-                self.run_name = value
-            elif key == 'lane_name':
-                if not value.replace('-', '').isalnum():
-                    raise AttributeError
-                self.lane_name = value
-            elif key == 'project_statistics_name':
-                if not value in ('experiments', 'downloads'):
-                    raise AttributeError
-                self.project_statistics_name = value
-            elif key == 'experiment_statistics_name':
-                if not value in ('experiments', 'overview', 'read', 'mapping', 'expression', 'splicing', 'discovery'):
-                    raise AttributeError
-                self.experiment_statistics_name = value
-            elif key == 'run_statistics_name':
-                if not value in ('overview', 'read', 'mapping', 'expression', 'splicing', 'discovery'):
-                    raise AttributeError
-                self.run_statistics_name = value
-            elif key == 'lane_statistics_name':
-                if not value in ('overview', 'read', 'mapping', 'expression', 'splicing', 'discovery'):
-                    raise AttributeError
-                self.lane_statistics_name = value
-            else:
-                print key, value
+            if not value.replace('-', '').replace('_', '').replace('.', '').isalnum():
                 raise AttributeError
 
-        # Go through the registry, and take only the resources that are referenced from the cells of the layout
+        self.chart_name, self.chart_format = request.matchdict['box_id_with_extension'].split('.')
+
+        # Go through the registry, and find the resource for this box
         for resource in RESOURCES_REGISTRY:
             if resource[0] == self.chart_name:
-                self.resource = resource
+                self.resources = [resource]
 
         if self.chart_format == 'html':
             packages = set(['corechart'])
-            chart_infos = get_chart_infos([self.resource], request.matchdict)
+            chart_infos = get_chart_infos(self, request)
             if len(chart_infos) == 0:
                 raise AttributeError
             for chart_info in chart_infos:
