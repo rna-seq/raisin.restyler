@@ -9,7 +9,7 @@ from utils import render_chartoptions
 from utils import render_description
 from utils import get_chart_infos
 from utils import get_resource_directly
-from raisin.box import resources_registry
+from raisin.box import RESOURCES_REGISTRY
 from raisin.page import PAGES
 
 
@@ -87,7 +87,7 @@ class Page(BaseFactory):
         unknown = set(cells)
 
         # Go through the registry, and take only the resources that are referenced from the cells of the layout
-        for resource in resources_registry:
+        for resource in RESOURCES_REGISTRY:
             if resource[0] in cells:
                 if resource[0] in unknown:
                     # This is a known resource, so remove it from the set of unknown
