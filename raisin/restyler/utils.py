@@ -94,27 +94,21 @@ def render_description(request, description, description_type):
     return rendered
 
 
-def get_chart_infos(resources, kw):
+def get_chart_infos(context, request):
     charts = []
-    for chart_name, method, predefined_content_types in resources:
+    for chart_name, method, predefined_content_types in context.resources:
         # Fill an empty chart with the statistics resources based on the wanted content types
         chart = BOXES[chart_name].copy()
         if not 'id' in chart:
             # At least put in a default id
             chart['id'] = chart_name
-        kw['chart_name'] = chart_name
+        request.matchdict['chart_name'] = chart_name
         successful_content_types = []
         for content_type in predefined_content_types:
-            # A content type can be any of the following or more:
-            #
-            # JSON = 'application/json'
-            # PICKLED = 'text/x-python-pickled-dict'
-            # ...
-            #
             try:
-                uri = RESOURCES[chart_name]['uri'] % kw
+                uri = RESOURCES[chart_name]['uri'] % request.matchdict
             except KeyError:
-                print RESOURCES[chart_name]['uri'], kw
+                print RESOURCES[chart_name]['uri'], request.matchdict
                 raise
             if content_type == PICKLED:
                 pick = resource.get(uri, content_type)
