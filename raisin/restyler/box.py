@@ -1,4 +1,3 @@
-from basefactory import BaseFactory
 from config import JSON
 from config import CSV
 from utils import render_javascript
@@ -10,7 +9,7 @@ from raisin.box import RESOURCES_REGISTRY
 from raisin.box import BOXES
 
 
-class Box(BaseFactory):
+class Box(object):
     """
     Shows one box on the page.
     """
@@ -19,7 +18,6 @@ class Box(BaseFactory):
         if request.matchdict == {'box_id_with_extension': u'favicon.ico'}:
             return
 
-        BaseFactory.__init__(self, request)
         self.charts = None
         self.chart_type = None
 
