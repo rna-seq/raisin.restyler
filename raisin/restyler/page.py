@@ -1,7 +1,6 @@
 import urlparse
 import pickle
 
-from basefactory import BaseFactory
 from config import JSON
 from config import PICKLED
 from utils import render_javascript
@@ -13,10 +12,9 @@ from raisin.box import RESOURCES_REGISTRY
 from raisin.page import PAGES
 
 
-class Page(BaseFactory):
+class Page(object):
 
     def __init__(self, request, ):
-        BaseFactory.__init__(self, request)
         self.layout_id = request.matched_route.name[len('p1_'):]
         self.layout = PAGES[self.layout_id]
         self.project_name = request.matchdict.get('project_name', None)
