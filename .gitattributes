@@ -3,7 +3,6 @@
 /README.txt -text
 raisin/__init__.py -text
 raisin/restyler/__init__.py -text
-raisin/restyler/basefactory.py -text
 raisin/restyler/box.py -text
 raisin/restyler/config.py -text
 raisin/restyler/page.py -text
