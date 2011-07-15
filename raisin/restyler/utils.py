@@ -130,8 +130,8 @@ def get_chart_infos(context, request):
     return charts
 
 
-def get_resource_directly(name, content_type, kw):
-    uri = RESOURCES[name]['uri'] % kw
+def get_resource_directly(name, content_type, kwargs):
+    uri = RESOURCES[name]['uri'] % kwargs
     return resource.get(uri, content_type)
 
 
