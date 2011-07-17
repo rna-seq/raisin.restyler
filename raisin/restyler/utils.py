@@ -1,7 +1,7 @@
 import pickle
 from zope.pagetemplate.pagetemplatefile import PageTemplateFile
 
-from raisin.restkit import resource
+from raisin.restkit import get_resource
 from raisin.box import RESOURCES
 from raisin.box import BOXES
 
@@ -111,12 +111,12 @@ def get_chart_infos(context, request):
                 print RESOURCES[chart_name]['uri'], request.matchdict
                 raise
             if content_type == PICKLED:
-                pick = resource.get(uri, content_type)
+                pick = get_resource(uri, content_type)
                 if not pick is None:
                     chart[content_type] = pickle.loads(pick)
                     successful_content_types.append(content_type)
             else:
-                result = resource.get(uri, content_type)
+                result = get_resource(uri, content_type)
                 if not result is None:
                     chart[content_type] = result
                     successful_content_types.append(content_type)
@@ -132,8 +132,4 @@ def get_chart_infos(context, request):
 
 def get_resource_directly(name, content_type, kwargs):
     uri = RESOURCES[name]['uri'] % kwargs
-    return resource.get(uri, content_type)
-
-
-def get_resource_by_url(url, content_type):
-    return resource.get(url, content_type)
+    return get_resource(uri, content_type)
