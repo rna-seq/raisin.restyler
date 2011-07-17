@@ -138,6 +138,7 @@ class Page(object):
             else:
                 chart['module_style'] = ""
             chart['description_rendered'] = render_description(request, chart.get('description', ''), chart.get('description_type', ''))
+            # Use an id with the postfox '_div' to make collisions unprobable
             chart['div_id'] = chart['id'] + '_div'
             charts.append(chart)
         return packages, charts
