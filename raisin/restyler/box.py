@@ -1,5 +1,6 @@
 """Box Base factory"""
 
+import re
 from config import JSON
 from config import CSV
 from utils import render_javascript
@@ -11,6 +12,7 @@ from raisin.box import RESOURCES_REGISTRY
 from raisin.box import BOXES
 
 
+
 class Box(object):
     """Shows one box on the page"""
 
@@ -20,11 +22,7 @@ class Box(object):
 
         self.charts = None
         self.chart_type = None
-
-        for value in request.matchdict.values():
-            if not value.replace('-', '').replace('_', '').replace('.', '').isalnum():
-                raise AttributeError
-
+        
         self.chart_name, self.chart_format = request.matchdict['box_id_with_extension'].split('.')
 
         # Go through the registry, and find the resource for this box
