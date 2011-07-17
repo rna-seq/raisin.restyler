@@ -1,3 +1,5 @@
+"""Box Base factory"""
+
 from config import JSON
 from config import CSV
 from utils import render_javascript
@@ -10,9 +12,7 @@ from raisin.box import BOXES
 
 
 class Box(object):
-    """
-    Shows one box on the page.
-    """
+    """Shows one box on the page"""
 
     def __init__(self, request):
         if request.matchdict == {'box_id_with_extension': u'favicon.ico'}:
@@ -21,7 +21,7 @@ class Box(object):
         self.charts = None
         self.chart_type = None
 
-        for key, value in request.matchdict.items():
+        for value in request.matchdict.values():
             if not value.replace('-', '').replace('_', '').replace('.', '').isalnum():
                 raise AttributeError
 
@@ -78,15 +78,18 @@ class Box(object):
                 # Now render the chart options with the new values
                 chart['chartoptions_rendered'] = render_chartoptions(chart['chartoptions'])
 
-            # Use a proper id for the chart when not rendered with any other divs
+            # Use the chart id without a postfix as we do for boxes on a page
             chart['div_id'] = chart['id']
             self.charts = [chart]
-            javascript = render_javascript(self.charts, packages)
-            self.javascript = javascript
+            self.javascript = render_javascript(self.charts, packages)
         elif self.chart_format == 'csv':
-            self.body = get_resource_directly(self.chart_name, CSV, request.matchdict)
+            self.body = get_resource_directly(self.chart_name,
+                                              CSV,
+                                              request.matchdict)
         elif self.chart_format == 'json':
-            self.body = get_resource_directly(self.chart_name, JSON, request.matchdict)
+            self.body = get_resource_directly(self.chart_name,
+                                              JSON,
+                                              request.matchdict)
         elif self.chart_format == 'ico':
             self.body = ""
         else:
