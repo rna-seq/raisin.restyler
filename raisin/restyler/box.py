@@ -1,6 +1,5 @@
 """Box Base factory"""
 
-import re
 from config import JSON
 from config import CSV
 from utils import render_javascript
