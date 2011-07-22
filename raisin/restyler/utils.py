@@ -99,7 +99,7 @@ def get_chart_infos(context):
     """
     charts = []
     for chart_name, method, content_types in context.resources:
-        # Fill an empty chart with the statistics resources based on the wanted 
+        # Fill an empty chart with the statistics resources based on the wanted
         # content types
         chart = BOXES[chart_name].copy()
         if not 'id' in chart:
@@ -107,14 +107,15 @@ def get_chart_infos(context):
             chart['id'] = chart_name
         successful_content_types = []
         for content_type in content_types:
-            result = get_resource(chart_name, 
-                                  content_type, 
+            result = get_resource(chart_name,
+                                  content_type,
                                   context.request.matchdict)
             chart[content_type] = result
         # Call the method on the current context
         method(context, chart)
         charts.append(chart)
     return charts
+
 
 def get_resource(name, content_type, kwargs):
     """Helper method to get a resource by name"""

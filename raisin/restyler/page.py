@@ -28,7 +28,7 @@ class Page(object):
 
         # pylint: disable-msg=E1101
         # no error
-        self.absolute_url = urlparse.urljoin(request.application_url, 
+        self.absolute_url = urlparse.urljoin(request.application_url,
                                              urlparse.urlparse(request.url).path)
         if not self.absolute_url.endswith('/'):
             self.absolute_url = self.absolute_url + '/'
@@ -190,7 +190,7 @@ class Page(object):
         items = {}
         items['title'] = 'RNASeq Pipeline Runs'
         items['level'] = 'Experiment'
-        items['toggle'] = 'Show %(title)s for this %(level)s' % items 
+        items['toggle'] = 'Show %(title)s for this %(level)s' % items
         experiment_runs = get_resource('experiment_runs',
                                        PICKLED,
                                        self.matchdict)
