@@ -43,7 +43,7 @@ class Box(object):
 
     def render_html(self):
         packages = set(['corechart'])
-        chart = get_chart_infos(self)[0]:
+        chart = get_chart_infos(self)[0]
         if 'charttype' in chart and 'data' in chart:
             if chart['charttype'] == 'Table':
                 packages.add(chart['charttype'].lower())
