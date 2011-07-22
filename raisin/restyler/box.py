@@ -6,7 +6,7 @@ from utils import render_javascript
 from utils import render_chartoptions
 from utils import render_description
 from utils import get_chart_infos
-from utils import get_resource_directly
+from utils import get_resource
 from raisin.box import RESOURCES_REGISTRY
 from raisin.box import BOXES
 
@@ -43,13 +43,7 @@ class Box(object):
 
     def render_html(self):
         packages = set(['corechart'])
-        chart_infos = get_chart_infos(self, self.request)
-        if len(chart_infos) == 0:
-            raise AttributeError
-        for chart_info in chart_infos:
-            chart = chart_info['chart']
-            method = chart_info['method']
-            method(self, chart)
+        for chart in get_chart_infos(self):
             if 'charttype' in chart and 'data' in chart:
                 if chart['charttype'] == 'Table':
                     packages.add(chart['charttype'].lower())
@@ -94,11 +88,11 @@ class Box(object):
         self.javascript = render_javascript(self.charts, packages)
 
     def render_csv(self):
-        self.body = get_resource_directly(self.chart_name,
-                                          CSV,
-                                          self.request.matchdict)
+        self.body = get_resource(self.chart_name,
+                                 CSV,
+                                 self.request.matchdict)
 
     def render_json(self):
-        self.body = get_resource_directly(self.chart_name,
-                                          JSON,
-                                          self.request.matchdict)
+        self.body = get_resource(self.chart_name,
+                                 JSON,
+                                 self.request.matchdict)
