@@ -1,7 +1,7 @@
 import pickle
 from zope.pagetemplate.pagetemplatefile import PageTemplateFile
 
-from raisin.restkit import get_resource
+from raisin.restkit import get_resource_by_uri
 from raisin.box import RESOURCES
 from raisin.box import BOXES
 
@@ -94,42 +94,37 @@ def render_description(request, description, description_type):
     return rendered
 
 
-def get_chart_infos(context, request):
+def get_chart_infos(context):
+    """Get all augmented charts from the resources in the context.
+    """
     charts = []
-    for chart_name, method, predefined_content_types in context.resources:
-        # Fill an empty chart with the statistics resources based on the wanted content types
+    for chart_name, method, content_types in context.resources:
+        # Fill an empty chart with the statistics resources based on the wanted 
+        # content types
         chart = BOXES[chart_name].copy()
         if not 'id' in chart:
             # At least put in a default id
             chart['id'] = chart_name
-        request.matchdict['chart_name'] = chart_name
         successful_content_types = []
-        for content_type in predefined_content_types:
-            try:
-                uri = RESOURCES[chart_name]['uri'] % request.matchdict
-            except KeyError:
-                print RESOURCES[chart_name]['uri'], request.matchdict
-                raise
-            if content_type == PICKLED:
-                pick = get_resource(uri, content_type)
-                if not pick is None:
-                    chart[content_type] = pickle.loads(pick)
-                    successful_content_types.append(content_type)
-            else:
-                result = get_resource(uri, content_type)
-                if not result is None:
-                    chart[content_type] = result
-                    successful_content_types.append(content_type)
-
-        if len(successful_content_types) == len(predefined_content_types):
-            charts.append({'chart': chart,
-                           'method': method,
-                           'successful_content_types': successful_content_types,
-                           'predefined_content_types': predefined_content_types})
-
+        for content_type in content_types:
+            result = get_resource(chart_name, 
+                                  content_type, 
+                                  context.request.matchdict)
+            chart[content_type] = result
+        # Call the method on the current context
+        method(context, chart)
+        charts.append(chart)
     return charts
 
-
-def get_resource_directly(name, content_type, kwargs):
-    uri = RESOURCES[name]['uri'] % kwargs
-    return get_resource(uri, content_type)
+def get_resource(name, content_type, kwargs):
+    """Helper method to get a resource by name"""
+    try:
+        uri = RESOURCES[name]['uri'] % kwargs
+    except KeyError:
+        print RESOURCES[name]['uri'], kwargs
+        raise
+    result = get_resource_by_uri(uri, content_type)
+    if not result is None:
+        if content_type == PICKLED:
+            result = pickle.loads(result)
+    return result
