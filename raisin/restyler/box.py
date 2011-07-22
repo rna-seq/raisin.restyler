@@ -43,11 +43,11 @@ class Box(object):
 
     def render_html(self):
         packages = set(['corechart'])
-        for chart in get_chart_infos(self):
-            if 'charttype' in chart and 'data' in chart:
-                if chart['charttype'] == 'Table':
-                    packages.add(chart['charttype'].lower())
-                self.javascript = render_javascript([chart, ], packages)
+        chart = get_chart_infos(self)[0]:
+        if 'charttype' in chart and 'data' in chart:
+            if chart['charttype'] == 'Table':
+                packages.add(chart['charttype'].lower())
+            self.javascript = render_javascript([chart, ], packages)
 
         # Render the chart to JSon
         if not JSON in chart or chart[JSON] is None:
