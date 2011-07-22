@@ -7,36 +7,39 @@ from utils import render_javascript
 from utils import render_chartoptions
 from utils import render_description
 from utils import get_chart_infos
-from utils import get_resource_directly
+from utils import get_resource
 from raisin.box import RESOURCES_REGISTRY
 from raisin.page import PAGES
 
 
 class Page(object):
 
-    def __init__(self, request, ):
+    def __init__(self, request):
+        self.request = request
+        self.matchdict = request.matchdict
         self.layout_id = request.matched_route.name[len('p1_'):]
         self.layout = PAGES[self.layout_id]
-        self.project_name = request.matchdict.get('project_name', None)
-        self.parameter_list = request.matchdict.get('parameter_list', None)
-        self.parameter_values = request.matchdict.get('parameter_values', None)
-        self.run_name = request.matchdict.get('run_name', None)
-        self.lane_name = request.matchdict.get('lane_name', None)
-        self.tab_name = request.matchdict.get("tab_name", None)
+        self.project_name = self.matchdict.get('project_name', None)
+        self.parameter_list = self.matchdict.get('parameter_list', None)
+        self.parameter_values = self.matchdict.get('parameter_values', None)
+        self.run_name = self.matchdict.get('run_name', None)
+        self.lane_name = self.matchdict.get('lane_name', None)
+        self.tab_name = self.matchdict.get("tab_name", None)
 
         # pylint: disable-msg=E1101
         # no error
-        self.absolute_url = urlparse.urljoin(request.application_url, urlparse.urlparse(request.url).path)
+        self.absolute_url = urlparse.urljoin(request.application_url, 
+                                             urlparse.urlparse(request.url).path)
         if not self.absolute_url.endswith('/'):
             self.absolute_url = self.absolute_url + '/'
 
-        self.breadcrumbs = self.get_breadcrumbs(request)
+        self.breadcrumbs = self.get_breadcrumbs()
 
         if self.layout_id == 'experiment':
-            self.items = self.get_items(request)
+            self.items = self.get_items()
 
         if 'tabbed_views' in self.layout:
-            self.tabs = self.get_tabs(request)
+            self.tabs = self.get_tabs()
 
         if self.layout_id in ['homepage', 'experiment_subset']:
             view = self.layout
@@ -98,46 +101,39 @@ class Page(object):
             print "Unknown resources: %s" % unknown
             raise AttributeError
 
-        self.packages, self.charts = self.get_packages_and_charts(request)
+        self.packages, self.charts = self.get_packages_and_charts()
 
         if len(self.charts) == 0:
             return None
         javascript = render_javascript([chart for chart in self.charts if ('charttype' in chart and 'data' in chart)], self.packages)
         self.javascript = javascript
 
-    def get_packages_and_charts(self, request):
+    def get_packages_and_charts(self):
         packages = set(['corechart'])
         charts = []
-        chart_infos = get_chart_infos(self, request)
-        for chart_info in chart_infos:
-            chart = chart_info['chart']
-            method = chart_info['method']
-            if set(chart_info['predefined_content_types']) == set(chart_info['successful_content_types']):
-                # When all content types are present, the augmentation should work fine
-                # and the chart content can be prepared
-                method(self, chart)
-                # Render the chart to JSon
-                if not JSON in chart or chart[JSON] is None:
-                    pass
-                elif not 'charttype' in chart:
-                    pass
-                else:
-                    chart['data'] = chart[JSON]
-                    # Prepare the packages that need to be loaded for google chart tools
-                    if chart['charttype'] == 'Table':
-                        packages.add(chart['charttype'].lower())
-                    chart['chartoptions']['is3D'] = False
-                    chart['chartoptions_rendered'] = render_chartoptions(chart['chartoptions'])
-                    if 'charttype' in chart:
-                        # The downloads are always relative to the current url
-                        chart['csv_download_url'] = self.absolute_url + "%s.csv" % chart['id']
-                        chart['html_download_url'] = self.absolute_url + "%s.html" % chart['id']
+        for chart in get_chart_infos(self):
+            # Render the chart to JSon
+            if not JSON in chart or chart[JSON] is None:
+                pass
+            elif not 'charttype' in chart:
+                pass
+            else:
+                chart['data'] = chart[JSON]
+                # Prepare the packages that need to be loaded for google chart tools
+                if chart['charttype'] == 'Table':
+                    packages.add(chart['charttype'].lower())
+                chart['chartoptions']['is3D'] = False
+                chart['chartoptions_rendered'] = render_chartoptions(chart['chartoptions'])
+                if 'charttype' in chart:
+                    # The downloads are always relative to the current url
+                    chart['csv_download_url'] = self.absolute_url + "%s.csv" % chart['id']
+                    chart['html_download_url'] = self.absolute_url + "%s.html" % chart['id']
             chart['module_id'] = self.columns_for_cells[chart['id']]
             if self.new_row_for_cells.get(chart['id'], False):
                 chart['module_style'] = "clear: both;"
             else:
                 chart['module_style'] = ""
-            chart['description_rendered'] = render_description(request, chart.get('description', ''), chart.get('description_type', ''))
+            chart['description_rendered'] = render_description(self.request, chart.get('description', ''), chart.get('description_type', ''))
             # Use an id with the postfox '_div' to make collisions unprobable
             chart['div_id'] = chart['id'] + '_div'
             charts.append(chart)
@@ -156,20 +152,20 @@ class Page(object):
             raise AttributeError
         return title
 
-    def get_breadcrumbs(self, request):
+    def get_breadcrumbs(self):
         breadcrumbs = []
         if 'breadcrumbs' in self.layout:
             if type(self.layout['breadcrumbs']) == type(''):
                 self.layout['breadcrumbs'] = [self.layout['breadcrumbs']]
             for item in self.layout['breadcrumbs']:
                 if item == 'homepage':
-                    url = request.application_url + '/'
+                    url = self.request.application_url + '/'
                     crumb = {'title': 'Projects', 'url': url}
                     breadcrumbs.append(crumb)
                 elif item == 'project':
                     url = '/project/%s/tab/experiments/' % self.project_name
                     crumb = {'title': 'Project: %s' % self.project_name,
-                             'url': request.application_url + url}
+                             'url': self.request.application_url + url}
                     breadcrumbs.append(crumb)
                 elif item == 'parameters':
                     url = '/project/%s/%s/%s/tab/%s' % (self.project_name,
@@ -177,7 +173,7 @@ class Page(object):
                                                                self.parameter_values,
                                                                self.tab_name)
                     crumb = {'title': 'Experiment: %s' % self.parameter_values,
-                             'url': request.application_url + url}
+                             'url': self.request.application_url + url}
                     breadcrumbs.append(crumb)
                 elif item == 'run':
                     url = '/project/%s/%s/%s/run/%s/tab/%s' % (self.project_name,
@@ -186,16 +182,18 @@ class Page(object):
                                                                       self.run_name,
                                                                       self.tab_name)
                     crumb = {'title': 'Run: %s' % self.run_name,
-                             'url': request.application_url + url}
+                             'url': self.request.application_url + url}
                     breadcrumbs.append(crumb)
         return breadcrumbs
 
-    def get_items(self, request):
+    def get_items(self):
         items = {}
         items['title'] = 'RNASeq Pipeline Runs'
         items['level'] = 'Experiment'
-        items['toggle'] = 'Show the individual %s for this %s' % (items['title'], items['level'])
-        experiment_runs = get_resource_directly('experiment_runs', PICKLED, request.matchdict)
+        items['toggle'] = 'Show %(title)s for this %(level)s' % items 
+        experiment_runs = get_resource('experiment_runs',
+                                       PICKLED,
+                                       self.matchdict)
         if experiment_runs is None:
             experiment_runs = {'table_data': [],
                                'table_description': [('Project Id', 'string'),
@@ -203,11 +201,9 @@ class Page(object):
                                                      ('Run Id', 'string'),
                                                      ('Run Url', 'string')]
                                }
-        else:
-            experiment_runs = pickle.loads(experiment_runs)
         items['list'] = []
         for item in experiment_runs['table_data']:
-            url = request.application_url + item[4]
+            url = self.request.application_url + item[4]
             if self.tab_name == 'experiments':
                 items['list'].append({'title': item[3],
                                       'url': url})
@@ -216,26 +212,26 @@ class Page(object):
                                       'url': url[:-len('overview')] + self.tab_name})
         return items
 
-    def get_tabs(self, request):
+    def get_tabs(self):
         tabs = []
         for tab in self.layout['tabbed_views']:
             if self.layout_id == 'project':
                 path = '/project/%s/tab/%s/' % (self.project_name,
                                                        tab)
-                url = request.application_url + path
+                url = self.request.application_url + path
             elif self.layout_id == 'experiment':
                 path = '/project/%s/%s/%s/tab/%s/' % (self.project_name,
                                                              self.parameter_list,
                                                              self.parameter_values,
                                                              tab)
-                url = request.application_url + path
+                url = self.request.application_url + path
             elif self.layout_id == 'run':
                 path = '/project/%s/%s/%s/run/%s/tab/%s/' % (self.project_name,
                                                                     self.parameter_list,
                                                                     self.parameter_values,
                                                                     self.run_name,
                                                                     tab)
-                url = request.application_url + path
+                url = self.request.application_url + path
             elif self.layout_id == 'lane':
                 path = '/project/%s/%s/%s/run/%s/lane/%s/tab/%s/' % (self.project_name,
                                                                             self.parameter_list,
@@ -243,7 +239,7 @@ class Page(object):
                                                                             self.run_name,
                                                                             self.lane_name,
                                                                             tab)
-                url = request.application_url + path
+                url = self.request.application_url + path
             else:
                 raise AttributeError
             tabs.append({'id': tab,
