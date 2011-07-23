@@ -1,5 +1,4 @@
 import urlparse
-import pickle
 
 from config import JSON
 from config import PICKLED
