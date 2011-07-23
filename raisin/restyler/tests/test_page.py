@@ -1,7 +1,7 @@
 import sys
 import unittest
 from raisin.restyler import page
-
+from pyramid.testing import DummyRequest
 
 class ResourceTest(unittest.TestCase):
     def setUp(self):
@@ -11,7 +11,14 @@ class ResourceTest(unittest.TestCase):
         unittest.TestCase.tearDown(self)
 
     def test_page(self):
-        page.Page({})
+        request = DummyRequest()
+        class DummyRoute(object):
+            name = 'p1_homepage'
+            
+        route = DummyRoute()
+
+        request.matched_route = route
+        page.Page(request)
 
 
 # make the test suite.
