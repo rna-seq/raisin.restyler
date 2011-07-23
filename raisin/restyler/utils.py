@@ -53,13 +53,16 @@ def render_description(request, description, description_type):
         rendered.append('<br />')
         for dictionary in description:
             key, value = dictionary.items()[0]
-            rendered.append("""<p class="info">%s: <strong>%s</strong></p>""" % (key, value))
+            rendered.append(("""<p class="info">"""
+                             """%s: <strong>%s</strong></p>""" % (key, value)))
     elif description_type == 'linklist':
         rendered.append('<ul class="linklist">')
         for line in description:
-            rendered.append("""<li class="schemagroup sg_announcements" style="float:none;">""")
+            rendered.append(("""<li class="schemagroup sg_announcements" """
+                             """style="float:none;">"""))
             link = request.application_url + line['URL']
-            rendered.append("""<a href="%s">%s</a>""" % (link, line['Experiment id']))
+            rendered.append("""<a href="%s">%s</a>""" % (link, 
+                                                         line['Experiment id']))
             rendered.append("""</li>""")
         rendered.append('</ul>')
     elif description_type == 'projectlist':
@@ -67,7 +70,8 @@ def render_description(request, description, description_type):
         for line in description:
             rendered.append("""<li>""")
             link = request.application_url + line['URL']
-            rendered.append("""<a href="%s">%s</a>""" % (link, line['Project Id']))
+            rendered.append("""<a href="%s">%s</a>""" % (link, 
+                                                         line['Project Id']))
             rendered.append("""</li>""")
         rendered.append('</ul>')
     else:
