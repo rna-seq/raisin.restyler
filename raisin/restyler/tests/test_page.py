@@ -3,6 +3,7 @@ import unittest
 from raisin.restyler import page
 from pyramid.testing import DummyRequest
 
+
 class ResourceTest(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
@@ -12,11 +13,10 @@ class ResourceTest(unittest.TestCase):
 
     def test_page(self):
         request = DummyRequest()
+
         class DummyRoute(object):
             name = 'p1_homepage'
-            
         route = DummyRoute()
-
         request.matched_route = route
         page.Page(request)
 
