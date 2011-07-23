@@ -51,6 +51,36 @@ class Page(object):
         else:
             raise AttributeError
 
+        cells = self.calculate_columns(view)
+
+        # We need to assemble all of the resources needed on the page
+        self.resources = []
+
+        # And keep track of any that were not found
+        unknown = set(cells)
+
+        # Go through the registry, and take only the resources that are referenced from the cells of the layout
+        for resource in RESOURCES_REGISTRY:
+            if resource[0] in cells:
+                if resource[0] in unknown:
+                    # This is a known resource, so remove it from the set of unknown
+                    unknown.remove(resource[0])
+                # Avoid duplicates
+                if not resource in self.resources:
+                    self.resources.append(resource[:])
+
+        if len(unknown) > 0:
+            print "Unknown resources: %s" % unknown
+            raise AttributeError
+
+        self.packages, self.charts = self.get_packages_and_charts()
+
+        if len(self.charts) == 0:
+            return None
+        javascript = render_javascript([chart for chart in self.charts if ('charttype' in chart and 'data' in chart)], self.packages)
+        self.javascript = javascript
+
+    def calculate_columns(self, view):
         # The names in the cells of the layout correspond to the charts
         cells = []
         # Remember which columns the cells occupy
@@ -80,33 +110,7 @@ class Page(object):
                     else:
                         self.columns_for_cells[column] = view['cols'][i]
                     i = i + 1
-
-        # We need to assemble all of the resources needed on the page
-        self.resources = []
-
-        # And keep track of any that were not found
-        unknown = set(cells)
-
-        # Go through the registry, and take only the resources that are referenced from the cells of the layout
-        for resource in RESOURCES_REGISTRY:
-            if resource[0] in cells:
-                if resource[0] in unknown:
-                    # This is a known resource, so remove it from the set of unknown
-                    unknown.remove(resource[0])
-                # Avoid duplicates
-                if not resource in self.resources:
-                    self.resources.append(resource[:])
-
-        if len(unknown) > 0:
-            print "Unknown resources: %s" % unknown
-            raise AttributeError
-
-        self.packages, self.charts = self.get_packages_and_charts()
-
-        if len(self.charts) == 0:
-            return None
-        javascript = render_javascript([chart for chart in self.charts if ('charttype' in chart and 'data' in chart)], self.packages)
-        self.javascript = javascript
+        return cells
 
     def get_packages_and_charts(self):
         packages = set(['corechart'])
