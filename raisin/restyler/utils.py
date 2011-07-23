@@ -61,7 +61,7 @@ def render_description(request, description, description_type):
             rendered.append(("""<li class="schemagroup sg_announcements" """
                              """style="float:none;">"""))
             link = request.application_url + line['URL']
-            rendered.append("""<a href="%s">%s</a>""" % (link, 
+            rendered.append("""<a href="%s">%s</a>""" % (link,
                                                          line['Experiment id']))
             rendered.append("""</li>""")
         rendered.append('</ul>')
@@ -70,7 +70,7 @@ def render_description(request, description, description_type):
         for line in description:
             rendered.append("""<li>""")
             link = request.application_url + line['URL']
-            rendered.append("""<a href="%s">%s</a>""" % (link, 
+            rendered.append("""<a href="%s">%s</a>""" % (link,
                                                          line['Project Id']))
             rendered.append("""</li>""")
         rendered.append('</ul>')
