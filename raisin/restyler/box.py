@@ -16,6 +16,8 @@ class Box(object):
 
     def __init__(self, request):
         self.request = request
+        self.body = ''
+        self.javascript = ''
         if request.matchdict == {'box_id_with_extension': u'favicon.ico'}:
             return
 
