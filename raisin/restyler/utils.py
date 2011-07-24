@@ -30,10 +30,10 @@ def render_chartoptions(chartoptions):
                    'lineSize', 'legendFontSize', 'pageSize',
                    'lineWidth', 'hAxis', 'vAxis']:
             rendered += "%s" % value
-        elif key in ['isStacked', 'is3D', 'smoothLine', 
+        elif key in ['isStacked', 'is3D', 'smoothLine',
                      'showRowNumber', 'allowHtml', 'chartArea']:
             rendered += "%s" % str(value).lower()
-        elif key in ['titleX', 'titleY', 'legend', 'page', 
+        elif key in ['titleX', 'titleY', 'legend', 'page',
                      'curveType', 'title']:
             rendered += "'%s'" % value
         elif key in ['colors', ]:
