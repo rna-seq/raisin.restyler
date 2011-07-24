@@ -1,3 +1,5 @@
+"""Page object rendered according to a layout"""
+
 import urlparse
 
 from config import JSON
@@ -18,12 +20,11 @@ class Page(object):
         self.matchdict = request.matchdict
         self.layout_id = request.matched_route.name[len('p1_'):]
         self.layout = PAGES[self.layout_id]
-        self.project_name = self.matchdict.get('project_name', None)
-        self.parameter_list = self.matchdict.get('parameter_list', None)
-        self.parameter_values = self.matchdict.get('parameter_values', None)
-        self.run_name = self.matchdict.get('run_name', None)
-        self.lane_name = self.matchdict.get('lane_name', None)
-        self.tab_name = self.matchdict.get("tab_name", None)
+
+        # Remember which columns the cells occupy
+        self.columns_for_cells = {}
+        # For each cell, remember whether it starts a new row
+        self.new_row_for_cells = {}
 
         # pylint: disable-msg=E1101
         # no error
@@ -43,7 +44,7 @@ class Page(object):
         if self.layout_id in ['homepage', 'experiment_subset']:
             view = self.layout
         elif self.layout_id in ['project', 'experiment', 'run', 'lane']:
-            if self.tab_name in self.layout:
+            if self.matchdict.get('tab_name', None) in self.layout:
                 view = self.layout[self.tab_name]
             else:
                 view = self.layout[self.layout['tabbed_views'][0]]
@@ -80,12 +81,9 @@ class Page(object):
         self.javascript = javascript
 
     def calculate_columns(self, view):
+        """Calculate the columns for the cells"""
         # The names in the cells of the layout correspond to the charts
         cells = []
-        # Remember which columns the cells occupy
-        self.columns_for_cells = {}
-        # For each cell, remember whether it starts a new row
-        self.new_row_for_cells = {}
         if type(view['rows']) == type(''):
             view['rows'] = [view['rows']]
         for row in view['rows']:
@@ -112,6 +110,7 @@ class Page(object):
         return cells
 
     def get_packages_and_charts(self):
+        """Return the packages and charts needed for rendering"""
         packages = set(['corechart'])
         charts = []
         for chart in get_chart_infos(self):
@@ -143,19 +142,21 @@ class Page(object):
         return packages, charts
 
     def Title(self):
-        title = "Project: %s" % self.project_name
+        """Returns the title of the page depending on the layout"""
+        title = "Project: %(project_name)s" % self.matchdict
         if self.layout_id == 'experiment_subset':
-            title = "Subset: %s" % self.parameter_values
+            title = "Subset: %(parameter_values)s" % self.matchdict
         elif self.layout_id in ['homepage', 'experiment_subset', 'project', 'experiment', 'run', 'lane']:
-            if not self.parameter_values is None:
-                title = "Experiment: %s" % self.parameter_values
-            if not self.run_name is None:
-                title = "RNASeq Pipeline Run: %s" % self.run_name
+            if not self.matchdict.get('parameter_values', None) is None:
+                title = "Experiment: %(parameter_values)s" % self.matchdict
+            if not self.matchdict.get('run_name', None) is None:
+                title = "RNASeq Pipeline Run: %(run_name)s" % self.matchdict
         else:
             raise AttributeError
         return title
 
     def get_breadcrumbs(self):
+        """Returns a list of dictionaries of breadcrumbs"""
         breadcrumbs = []
         if 'breadcrumbs' in self.layout:
             if type(self.layout['breadcrumbs']) == type(''):
@@ -166,30 +167,24 @@ class Page(object):
                     crumb = {'title': 'Projects', 'url': url}
                     breadcrumbs.append(crumb)
                 elif item == 'project':
-                    url = '/project/%s/tab/experiments/' % self.project_name
-                    crumb = {'title': 'Project: %s' % self.project_name,
+                    url = '/project/%(project_name)s/tab/experiments/' % self.matchdict
+                    crumb = {'title': 'Project: %(project_name)s' % self.matchdict,
                              'url': self.request.application_url + url}
                     breadcrumbs.append(crumb)
                 elif item == 'parameters':
-                    url = '/project/%s/%s/%s/tab/%s' % (self.project_name,
-                                                               self.parameter_list,
-                                                               self.parameter_values,
-                                                               self.tab_name)
-                    crumb = {'title': 'Experiment: %s' % self.parameter_values,
+                    url = '/project/%(project_name)s/%(parameter_list)s/%(parameter_values)s/tab/%(tab_name)s' % self.matchdict
+                    crumb = {'title': 'Experiment: %(parameter_values)s' % self.matchdict,
                              'url': self.request.application_url + url}
                     breadcrumbs.append(crumb)
                 elif item == 'run':
-                    url = '/project/%s/%s/%s/run/%s/tab/%s' % (self.project_name,
-                                                                      self.parameter_list,
-                                                                      self.parameter_values,
-                                                                      self.run_name,
-                                                                      self.tab_name)
-                    crumb = {'title': 'Run: %s' % self.run_name,
+                    url = '/project/%(project_name)s/%(parameter_list)s/%(parameter_values)s/run/%(run_name)s/tab/%(tab_name)s' % self.matchdict
+                    crumb = {'title': 'Run: %(run_name)s' % self.matchdict,
                              'url': self.request.application_url + url}
                     breadcrumbs.append(crumb)
         return breadcrumbs
 
     def get_items(self):
+        """Returns a list of dictionaries of sub items"""
         items = {}
         items['title'] = 'RNASeq Pipeline Runs'
         items['level'] = 'Experiment'
@@ -204,49 +199,43 @@ class Page(object):
                                                      ('Run Id', 'string'),
                                                      ('Run Url', 'string')]
                                }
+        tab_name = self.matchdict.get('tab_name', None)
         items['list'] = []
         for item in experiment_runs['table_data']:
             url = self.request.application_url + item[4]
-            if self.tab_name == 'experiments':
+            if tab_name == 'experiments':
                 items['list'].append({'title': item[3],
                                       'url': url})
             else:
                 items['list'].append({'title': item[3],
-                                      'url': url[:-len('overview')] + self.tab_name})
+                                      'url': url[:-len('overview')] + tab_name})
         return items
 
     def get_tabs(self):
+        """Returns a list of dictionaries of tabs"""
+        tab_name = self.matchdict.get('tab_name', None)
         tabs = []
         for tab in self.layout['tabbed_views']:
             if self.layout_id == 'project':
-                path = '/project/%s/tab/%s/' % (self.project_name,
-                                                       tab)
+                path = '/project/%(project_name)s' % self.matchdict
+                path += '/tab/%s/' % tab
                 url = self.request.application_url + path
             elif self.layout_id == 'experiment':
-                path = '/project/%s/%s/%s/tab/%s/' % (self.project_name,
-                                                             self.parameter_list,
-                                                             self.parameter_values,
-                                                             tab)
+                path = '/project/%(project_name)s/%(parameter_list)s/%(parameter_values)s' % self.matchdict
+                path += '/tab/%s/' % tab
                 url = self.request.application_url + path
             elif self.layout_id == 'run':
-                path = '/project/%s/%s/%s/run/%s/tab/%s/' % (self.project_name,
-                                                                    self.parameter_list,
-                                                                    self.parameter_values,
-                                                                    self.run_name,
-                                                                    tab)
+                path = '/project/%(project_name)s/%(parameter_list)s/%(parameter_values)s/run/%(run_name)s' % self.matchdict
+                path += '/tab/%s/' % tab
                 url = self.request.application_url + path
             elif self.layout_id == 'lane':
-                path = '/project/%s/%s/%s/run/%s/lane/%s/tab/%s/' % (self.project_name,
-                                                                            self.parameter_list,
-                                                                            self.parameter_values,
-                                                                            self.run_name,
-                                                                            self.lane_name,
-                                                                            tab)
+                path = '/project/%(project_name)s/%(parameter_list)s/%(parameter_values)s/run/%(run_name)s/lane/%(lane_name)s' % self.matchdict
+                path += '/tab/%s/' % tab
                 url = self.request.application_url + path
             else:
                 raise AttributeError
             tabs.append({'id': tab,
                          'title': self.layout[tab]['title'],
-                         'current': tab == self.tab_name,
+                         'current': tab == tab_name,
                          'url': url})
         return tabs
