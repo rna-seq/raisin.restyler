@@ -50,6 +50,8 @@ class Cells(object):
                     # Store whether this column is the start or not of a new row
                     if i == 0:
                         self.new_row_for_cells[column] = True
+                    else:
+                        self.new_row_for_cells[column] = False
                     self.cells.append(column)
                     if column in self.columns_for_cells:
                         # There is already a column occupied by this item
@@ -285,3 +287,6 @@ class Page(object):
 
     def get_charts(self):
         return self.restyler.charts
+
+    def get_javascript(self):
+        return self.restyler.javascript
