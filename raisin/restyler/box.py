@@ -34,18 +34,19 @@ class Box(object):
                 self.resources = [resource]
 
         if self.chart_format == 'html':
-            self.render_html()
+            self.render_html(request)
         elif self.chart_format == 'csv':
-            self.render_csv()
+            self.render_csv(request)
         elif self.chart_format == 'json':
-            self.render_json()
+            self.render_json(request)
         else:
             print "Format not supported %s" % self.chart_format
             raise AttributeError
 
-    def render_html(self):
+    def render_html(self, request):
+        """Render a resource as HTML"""
         packages = set(['corechart'])
-        chart = get_chart_infos(self)[0]
+        chart = get_chart_infos(self, request)[0]
         if 'charttype' in chart and 'data' in chart:
             if chart['charttype'] == 'Table':
                 packages.add(chart['charttype'].lower())
@@ -89,12 +90,14 @@ class Box(object):
         self.charts = [chart]
         self.javascript = render_javascript(self.charts, packages)
 
-    def render_csv(self):
+    def render_csv(self, request):
+        """Render a resource as CSV"""
         self.body = get_resource(self.chart_name,
                                  CSV,
-                                 self.request.matchdict)
+                                 request.matchdict)
 
-    def render_json(self):
+    def render_json(self, request):
+        """Render a resource as JSON"""
         self.body = get_resource(self.chart_name,
                                  JSON,
-                                 self.request.matchdict)
+                                 request.matchdict)

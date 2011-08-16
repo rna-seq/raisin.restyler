@@ -4,6 +4,10 @@ from raisin.restyler import page
 from pyramid.testing import DummyRequest
 
 
+class MatchedRoute(object):
+    pass
+
+
 class ResourceTest(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
@@ -19,6 +23,35 @@ class ResourceTest(unittest.TestCase):
         route = DummyRoute()
         request.matched_route = route
         page.Page(request)
+
+    def test_get_breadcrumbs_1(self):
+        """No layout, no breadcrumbs"""
+        request = DummyRequest()
+        request.matched_route = MatchedRoute()
+        request.matched_route.name = 'p1_homepage'
+        p = page.Page(request)
+        self.failUnless(p.get_breadcrumbs(request) == None)
+
+    def test_get_breadcrumbs_2(self):
+        request = DummyRequest()
+        request.matched_route = MatchedRoute()
+        request.matched_route.name = 'p1_project'
+        request.matchdict = {'project_name': 'ENCODE'}
+        p = page.Page(request)
+        breadcrumbs = [{'url': 'http://example.com/',
+                        'title': 'Projects'}]
+        self.failUnless(p.get_breadcrumbs(request) == breadcrumbs)
+
+    def test_get_breadcrumbs_3(self):
+        request = DummyRequest()
+        request.matched_route = MatchedRoute()
+        request.matched_route.name = 'p1_run'
+        request.matchdict = {'project_name': 'ENCODE',
+                             'run_name': 'Ging001N'}
+        p = page.Page(request)
+        breadcrumbs = [{'url': 'http://example.com/',
+                        'title': 'Projects'}]
+        self.failUnless(p.get_breadcrumbs(request) == breadcrumbs)
 
 
 # make the test suite.
