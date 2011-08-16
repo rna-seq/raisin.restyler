@@ -12,9 +12,15 @@ from config import PICKLED
 
 def render_javascript(charts, packages):
     """Render the javascript for the charts and packages"""
+    render_charts = []
+    for chart in charts:
+        if 'charttype' in chart and 'data' in chart:
+            render_charts.append(chart)
+    if len(render_charts) == 0:
+        return None
     pagetemplate = PageTemplateFile('templates/javascript.pt')
     context = {'packages': "'%s'" % ','.join(packages),
-               'charts': charts}
+               'charts': render_charts}
     return pagetemplate.pt_render(namespace=context)
 
 
@@ -138,7 +144,7 @@ def render_list(description):
     return rendered
 
 
-def get_chart_infos(context):
+def get_chart_infos(context, request):
     """Get all augmented charts from the resources in the context."""
     charts = []
     for chart_name, method, content_types in context.resources:
@@ -151,8 +157,9 @@ def get_chart_infos(context):
         for content_type in content_types:
             result = get_resource(chart_name,
                                   content_type,
-                                  context.request.matchdict)
+                                  request.matchdict)
             chart[content_type] = result
+
         # Call the method on the current context
         method(context, chart)
         charts.append(chart)
