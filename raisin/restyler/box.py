@@ -8,14 +8,12 @@ from utils import render_description
 from utils import get_chart_infos
 from utils import get_resource
 from raisin.box import RESOURCES_REGISTRY
-from raisin.box import BOXES
 
 
 class Box(object):
     """Shows one box on the page"""
 
     def __init__(self, request):
-        self.request = request
         self.body = ''
         self.javascript = ''
         if request.matchdict == {'box_id_with_extension': u'favicon.ico'}:
@@ -63,27 +61,34 @@ class Box(object):
             if chart['charttype'] == 'Table':
                 packages.add(chart['charttype'].lower())
             chart['chartoptions']['is3D'] = False
-            chart['chartoptions_rendered'] = render_chartoptions(chart['chartoptions'])
+            rendered = render_chartoptions(chart['chartoptions'])
+            chart['chartoptions_rendered'] = rendered
 
-        chart['description_rendered'] = render_description(self.request,
-                                                           chart.get('description', ''),
-                                                           chart.get('description_type', ''))
+        rendered = render_description(request,
+                                      chart.get('description', ''),
+                                      chart.get('description_type', ''))
+        chart['description_rendered'] = rendered
+
         if 'chartoptions' in chart:
-            # Depending on the chart type different JavaScript libraries need to be used
+            # Depending on the chart type different JavaScript libraries
+            # need to be used
             self.chart_type = chart['charttype']
 
-            # Sometimes it is necessary to override the width and height completely from
-            # the outside by just passing the width and height through the url
-            # This is useful when doing screenshots.
-            if 'width' in self.request.GET:
+            # Sometimes it is necessary to override the width and height
+            # completely from the outside by just passing the width and height
+            # through the url. This is useful when doing screenshots.
+            if 'width' in request.GET:
                 # width can be overridden from the request query
-                chart['chartoptions']['width'] = int(self.request.GET['width'])
-            if 'height' in self.request.GET:
+                width = int(request.GET['width'])
+                chart['chartoptions']['width'] = width
+            if 'height' in request.GET:
                 # height can be overridden from the request query
-                chart['chartoptions']['height'] = int(self.request.GET['height'])
+                height = int(request.GET['height'])
+                chart['chartoptions']['height'] = height
 
             # Now render the chart options with the new values
-            chart['chartoptions_rendered'] = render_chartoptions(chart['chartoptions'])
+            rendered = render_chartoptions(chart['chartoptions'])
+            chart['chartoptions_rendered'] = rendered
 
         # Use the chart id without a postfix as we do for boxes on a page
         chart['div_id'] = chart['id']
