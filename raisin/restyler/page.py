@@ -26,6 +26,7 @@ def get_absolute_url(request):
 
 
 class Cells(object):
+    """Provides information on what cells charts are located in."""
 
     def __init__(self, view):
         # Remember which columns the cells occupy
@@ -44,7 +45,9 @@ class Cells(object):
                 self.columns_for_cells[columns['columns']] = view['cols'][0]
             else:
                 if len(columns['columns']) > len(view['cols']):
-                    raise AttributeError("Warning: The number of rows is too big: %s %s" % (columns['columns'], view['cols']))
+                    warning = "Warning: The number of rows is too big: %s %s"
+                    raise AttributeError(warning % (columns['columns'], 
+                                                    view['cols']))
                 i = 0
                 for column in columns['columns']:
                     # Store whether this column is the start or not of a new row
@@ -55,22 +58,26 @@ class Cells(object):
                     self.cells.append(column)
                     if column in self.columns_for_cells:
                         # There is already a column occupied by this item
-                        self.columns_for_cells[column] = self.columns_for_cells[column] + view['cols'][i]
+                        self.columns_for_cells[column] += view['cols'][i]
                     else:
                         self.columns_for_cells[column] = view['cols'][i]
                     i = i + 1
 
     def get_cells(self):
+        """Get the cells"""
         return self.cells
 
     def get_column_for_chart(self, chart_id):
+        """Returns the column for a chart"""
         return self.columns_for_cells[chart_id]
 
     def get_new_row_for_chart(self, chart_id):
+        """Answers the question whether a new row is needed for this chart"""
         return self.new_row_for_cells[chart_id]
 
 
 class Layout(object):
+    """Provides information on the layout and its cells."""
 
     def __init__(self, request):
         self.layout_id = request.matched_route.name[len('p1_'):]
@@ -89,19 +96,24 @@ class Layout(object):
         self.cells = Cells(self.view)
 
     def get_cells(self):
+        """Get the cells"""
         return self.cells
 
     def get_view(self):
+        """Get the view"""
         return self.view
 
     def get_layout(self):
+        """Get the layout"""
         return self.layout
 
     def get_layout_id(self):
+        """Get the layout id"""
         return self.layout_id
 
 
 class Restyler(object):
+    """Gets resources and renders them as charts"""
 
     def __init__(self, request, cells):
         self.cells = cells
@@ -112,7 +124,7 @@ class Restyler(object):
 
     def get_packages_and_charts(self, request):
         """Return the packages and charts needed for rendering"""
-        absolute_url = get_absolute_url(request)
+        url = get_absolute_url(request)
         packages = set(['corechart'])
         charts = []
         for chart in get_chart_infos(self, request):
@@ -124,21 +136,25 @@ class Restyler(object):
                 pass
             else:
                 chart['data'] = chart[JSON]
-                # Prepare the packages that need to be loaded for google chart tools
+                # Prepare the packages for the google chart tools
                 if chart['charttype'] == 'Table':
                     packages.add(chart['charttype'].lower())
                 chart['chartoptions']['is3D'] = False
-                chart['chartoptions_rendered'] = render_chartoptions(chart['chartoptions'])
+                rendered = render_chartoptions(chart['chartoptions'])
+                chart['chartoptions_rendered'] = rendered
                 if 'charttype' in chart:
                     # The downloads are always relative to the current url
-                    chart['csv_download_url'] = absolute_url + "%s.csv" % chart['id']
-                    chart['html_download_url'] = absolute_url + "%s.html" % chart['id']
+                    chart['csv_download_url'] = url + "%s.csv" % chart['id']
+                    chart['html_download_url'] = url + "%s.html" % chart['id']
             chart['module_id'] = self.cells.get_column_for_chart(chart['id'])
             if self.cells.get_new_row_for_chart(chart['id']):
                 chart['module_style'] = "clear: both;"
             else:
                 chart['module_style'] = ""
-            chart['description_rendered'] = render_description(request, chart.get('description', ''), chart.get('description_type', ''))
+            rendered = render_description(request, 
+                                          chart.get('description', ''), 
+                                          chart.get('description_type', ''))
+            chart['description_rendered'] = rendered
             # Use an id with the postfox '_div' to make collisions unprobable
             chart['div_id'] = chart['id'] + '_div'
             charts.append(chart)
@@ -154,7 +170,7 @@ class Restyler(object):
         for resource in RESOURCES_REGISTRY:
             if resource[0] in self.cells.get_cells():
                 if resource[0] in unknown:
-                    # This is a known resource, so remove it from the set of unknown
+                    # This is a known resource, so remove it from the unknown
                     unknown.remove(resource[0])
                 # Avoid duplicates
                 if not resource in resources:
@@ -182,7 +198,12 @@ class Page(object):
         title = "Project: %(project_name)s" % request.matchdict
         if layout_id == 'experiment_subset':
             title = "Subset: %(parameter_values)s" % request.matchdict
-        elif layout_id in ['homepage', 'experiment_subset', 'project', 'experiment', 'run', 'lane']:
+        elif layout_id in ['homepage',
+                           'experiment_subset',
+                           'project',
+                           'experiment',
+                           'run',
+                           'lane']:
             if not request.matchdict.get('parameter_values', None) is None:
                 title = "Experiment: %(parameter_values)s" % request.matchdict
             if not request.matchdict.get('run_name', None) is None:
@@ -286,7 +307,9 @@ class Page(object):
         return tabs
 
     def get_charts(self):
+        """Get the precalculated charts"""
         return self.restyler.charts
 
     def get_javascript(self):
+        """Get the precalculated javascript"""
         return self.restyler.javascript
