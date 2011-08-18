@@ -247,33 +247,9 @@ class Page(object):
 
     def get_items(self, request):
         """Returns a list of dictionaries of sub items"""
-        if self.layout.get_layout_id() != 'experiment':
-            return
-        items = {}
-        items['title'] = 'RNASeq Pipeline Runs'
-        items['level'] = 'Experiment'
-        items['toggle'] = 'Show %(title)s for this %(level)s' % items
-        experiment_runs = get_resource('experiment_runs',
-                                       PICKLED,
-                                       request.matchdict)
-        if experiment_runs is None:
-            description = [('Project Id', 'string'),
-                           ('Experiment Id', 'string'),
-                           ('Run Id', 'string'),
-                           ('Run Url', 'string')]
-            experiment_runs = {'table_data': [],
-                               'table_description': description,
-                              }
-        tab_name = request.matchdict.get('tab_name', None)
-        items['list'] = []
-        for item in experiment_runs['table_data']:
-            url = request.application_url + item[4]
-            if tab_name == 'experiments':
-                items['list'].append({'title': item[3],
-                                      'url': url})
-            else:
-                items['list'].append({'title': item[3],
-                                      'url': url[:-len('overview')] + tab_name})
+        items = None
+        if self.layout.get_layout_id() == 'experiment':
+            items = get_run_items(request)
         return items
 
     def get_tabs(self, request):
@@ -313,3 +289,31 @@ class Page(object):
     def get_javascript(self):
         """Get the precalculated javascript"""
         return self.restyler.javascript
+
+def get_run_items(request):
+    items = {}
+    items['title'] = 'RNASeq Pipeline Runs'
+    items['level'] = 'Experiment'
+    items['toggle'] = 'Show %(title)s for this %(level)s' % items
+    experiment_runs = get_resource('experiment_runs',
+                                   PICKLED,
+                                   request.matchdict)
+    if experiment_runs is None:
+        description = [('Project Id', 'string'),
+                       ('Experiment Id', 'string'),
+                       ('Run Id', 'string'),
+                       ('Run Url', 'string')]
+        experiment_runs = {'table_data': [],
+                           'table_description': description,
+                          }
+    tab_name = request.matchdict.get('tab_name', None)
+    items['list'] = []
+    for item in experiment_runs['table_data']:
+        url = request.application_url + item[4]
+        if tab_name == 'experiments':
+            items['list'].append({'title': item[3],
+                                  'url': url})
+        else:
+            items['list'].append({'title': item[3],
+                                  'url': url[:-len('overview')] + tab_name})
+    return items
