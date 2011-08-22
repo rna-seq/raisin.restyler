@@ -291,6 +291,7 @@ class Page(object):
         return self.restyler.javascript
 
 def get_run_items(request):
+    """Return items for run"""
     items = {}
     items['title'] = 'RNASeq Pipeline Runs'
     items['level'] = 'Experiment'
