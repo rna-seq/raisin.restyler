@@ -9,10 +9,6 @@ function drawTables() {
 
     var thousandsformatter = new google.visualization.NumberFormat({fractionDigits: 0, groupingSymbol:","});
     var percentageformatter = new google.visualization.NumberFormat({suffix: "%", fractionDigits: 1});
-
-    function makeUCSCLink(dataTable, rowNum){
-      return String.fromCharCode('60') + "a href=\"" + dataTable.getValue(rowNum, 6) + '\"' + String.fromCharCode('62') + 'UCSC' + String.fromCharCode('60') + '/a' + String.fromCharCode('62');
-    }
         
     <tal:block repeat="chart python:charts">
       <tal:block define="charttype python:chart.get('charttype', None)">
