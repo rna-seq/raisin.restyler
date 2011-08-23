@@ -48,20 +48,20 @@ class Cells(object):
                     warning = "Warning: The number of rows is too big: %s %s"
                     raise AttributeError(warning % (columns['columns'], 
                                                     view['cols']))
-                i = 0
+                index = 0
                 for column in columns['columns']:
                     # Store whether this column is the start or not of a new row
-                    if i == 0:
+                    if index == 0:
                         self.new_row_for_cells[column] = True
                     else:
                         self.new_row_for_cells[column] = False
                     self.cells.append(column)
                     if column in self.columns_for_cells:
                         # There is already a column occupied by this item
-                        self.columns_for_cells[column] += view['cols'][i]
+                        self.columns_for_cells[column] += view['cols'][index]
                     else:
-                        self.columns_for_cells[column] = view['cols'][i]
-                    i = i + 1
+                        self.columns_for_cells[column] = view['cols'][index]
+                    index += 1
 
     def get_cells(self):
         """Get the cells"""
