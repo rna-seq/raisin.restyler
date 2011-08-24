@@ -46,7 +46,7 @@ class Cells(object):
             else:
                 if len(columns['columns']) > len(view['cols']):
                     warning = "Warning: The number of rows is too big: %s %s"
-                    raise AttributeError(warning % (columns['columns'], 
+                    raise AttributeError(warning % (columns['columns'],
                                                     view['cols']))
                 index = 0
                 for column in columns['columns']:
@@ -151,8 +151,8 @@ class Restyler(object):
                 chart['module_style'] = "clear: both;"
             else:
                 chart['module_style'] = ""
-            rendered = render_description(request, 
-                                          chart.get('description', ''), 
+            rendered = render_description(request,
+                                          chart.get('description', ''),
                                           chart.get('description_type', ''))
             chart['description_rendered'] = rendered
             # Use an id with the postfox '_div' to make collisions unprobable
@@ -289,6 +289,7 @@ class Page(object):
     def get_javascript(self):
         """Get the precalculated javascript"""
         return self.restyler.javascript
+
 
 def get_run_items(request):
     """Return items for run"""
