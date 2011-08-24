@@ -1,16 +1,30 @@
 """Page object rendered according to a layout"""
 
 import urlparse
-
+import pickle
 from config import JSON
 from config import PICKLED
 from utils import render_javascript
 from utils import render_chartoptions
 from utils import render_description
-from utils import get_chart_infos
-from utils import get_resource
 from raisin.box import RESOURCES_REGISTRY
 from raisin.page import PAGES
+from raisin.restkit import get_resource_by_uri
+from raisin.box import RESOURCES
+from raisin.box import BOXES
+
+def get_resource(name, content_type, kwargs):
+    """Helper method to get a resource by name"""
+    try:
+        uri = RESOURCES[name]['uri'] % kwargs
+    except KeyError:
+        print RESOURCES[name]['uri'], kwargs
+        raise
+    result = get_resource_by_uri(uri, content_type)
+    if not result is None:
+        if content_type == PICKLED:
+            result = pickle.loads(result)
+    return result
 
 
 def get_absolute_url(request):
@@ -117,17 +131,16 @@ class Restyler(object):
 
     def __init__(self, request, cells):
         self.cells = cells
-        # We need to assemble all of the resources needed on the page
         self.resources = self.get_resources()
-        self.packages, self.charts = self.get_packages_and_charts(request)
+        self.charts = self.get_charts(request)
+        self.packages = self.get_packages()
         self.javascript = render_javascript(self.charts, self.packages)
 
-    def get_packages_and_charts(self, request):
-        """Return the packages and charts needed for rendering"""
+    def get_charts(self, request):
+        """Return the charts needed for rendering"""
         url = get_absolute_url(request)
-        packages = set(['corechart'])
         charts = []
-        for chart in get_chart_infos(self, request):
+        for chart in self.get_chart_infos(request):
             chart['chartoptions_rendered'] = ""
             # Render the chart to JSon
             if not JSON in chart or chart[JSON] is None:
@@ -136,16 +149,11 @@ class Restyler(object):
                 pass
             else:
                 chart['data'] = chart[JSON]
-                # Prepare the packages for the google chart tools
-                if chart['charttype'] == 'Table':
-                    packages.add(chart['charttype'].lower())
                 chart['chartoptions']['is3D'] = False
                 rendered = render_chartoptions(chart['chartoptions'])
                 chart['chartoptions_rendered'] = rendered
-                if 'charttype' in chart:
-                    # The downloads are always relative to the current url
-                    chart['csv_download_url'] = url + "%s.csv" % chart['id']
-                    chart['html_download_url'] = url + "%s.html" % chart['id']
+                chart['csv_download_url'] = url + "%s.csv" % chart['id']
+                chart['html_download_url'] = url + "%s.html" % chart['id']
             chart['module_id'] = self.cells.get_column_for_chart(chart['id'])
             if self.cells.get_new_row_for_chart(chart['id']):
                 chart['module_style'] = "clear: both;"
@@ -158,7 +166,18 @@ class Restyler(object):
             # Use an id with the postfox '_div' to make collisions unprobable
             chart['div_id'] = chart['id'] + '_div'
             charts.append(chart)
-        return packages, charts
+        return charts
+
+    def get_packages(self):
+        """Google Chart tools has a lot of packages covered in the corecharts
+        already, and the only chart type that necessitates loading a package
+        is the table.
+        """
+        packages = set(['corechart'])
+        for chart in self.charts:
+            if chart.get('charttype', None) == 'Table':
+                packages.add(chart['charttype'].lower())
+        return packages
 
     def get_resources(self):
         """Get a list of all resources"""
@@ -180,6 +199,30 @@ class Restyler(object):
             raise AttributeError
         return resources
 
+    def get_chart_infos(self, request):
+        """Get all augmented charts from the resources in the context."""
+        charts = []
+        for chart_name, method, content_types in self.resources:
+            # Fill an empty chart with the statistics resources based on the wanted
+            # content types
+            chart = BOXES[chart_name].copy()
+            if not 'id' in chart:
+                # At least put in a default id
+                chart['id'] = chart_name
+            success = True
+            for content_type in content_types:
+                result = get_resource(chart_name,
+                                      content_type,
+                                      request.matchdict)
+                if result is None:
+                    success = False
+                else:
+                    chart[content_type] = result
+            if success:
+                # Call the method on the current context
+                method(self, chart)
+                charts.append(chart)
+        return charts
 
 class Page(object):
     """Renders a page with boxes in a layout."""
