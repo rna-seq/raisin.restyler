@@ -47,11 +47,18 @@ class ResourceTest(unittest.TestCase):
         request.matched_route = MatchedRoute()
         request.matched_route.name = 'p1_run'
         request.matchdict = {'project_name': 'ENCODE',
-                             'run_name': 'Ging001N'}
+                             'run_name': 'Ging001N',
+                             'parameter_list': None,
+                             'parameter_values': None,
+                             'tab_name': None}
         p = page.Page(request)
-        breadcrumbs = [{'url': 'http://example.com/',
-                        'title': 'Projects'}]
-        self.failUnless(p.get_breadcrumbs(request) == breadcrumbs)
+        bcr = [{'url': 'http://example.com/',
+                'title': 'Projects'},
+               {'url': 'http://example.com/project/ENCODE/tab/experiments/',
+                'title': 'Project: ENCODE'},
+               {'url': 'http://example.com/project/ENCODE/None/None/tab/None',
+                'title': 'Experiment: None'}]
+        self.failUnless(p.get_breadcrumbs(request) == bcr)
 
 
 # make the test suite.
