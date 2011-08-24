@@ -1,14 +1,6 @@
 """Utility methods for rendering, charts and resources"""
 
-import pickle
 from zope.pagetemplate.pagetemplatefile import PageTemplateFile
-
-from raisin.restkit import get_resource_by_uri
-from raisin.box import RESOURCES
-from raisin.box import BOXES
-
-from config import PICKLED
-
 
 def render_javascript(charts, packages):
     """Render the javascript for the charts and packages"""
@@ -142,39 +134,3 @@ def render_list(description):
     if rendered:
         rendered = ['<br />'] + rendered
     return rendered
-
-
-def get_chart_infos(context, request):
-    """Get all augmented charts from the resources in the context."""
-    charts = []
-    for chart_name, method, content_types in context.resources:
-        # Fill an empty chart with the statistics resources based on the wanted
-        # content types
-        chart = BOXES[chart_name].copy()
-        if not 'id' in chart:
-            # At least put in a default id
-            chart['id'] = chart_name
-        for content_type in content_types:
-            result = get_resource(chart_name,
-                                  content_type,
-                                  request.matchdict)
-            chart[content_type] = result
-
-        # Call the method on the current context
-        method(context, chart)
-        charts.append(chart)
-    return charts
-
-
-def get_resource(name, content_type, kwargs):
-    """Helper method to get a resource by name"""
-    try:
-        uri = RESOURCES[name]['uri'] % kwargs
-    except KeyError:
-        print RESOURCES[name]['uri'], kwargs
-        raise
-    result = get_resource_by_uri(uri, content_type)
-    if not result is None:
-        if content_type == PICKLED:
-            result = pickle.loads(result)
-    return result
