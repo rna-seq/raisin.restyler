@@ -5,15 +5,44 @@ from config import CSV
 from utils import render_javascript
 from utils import render_chartoptions
 from utils import render_description
-from utils import get_chart_infos
-from utils import get_resource
 from raisin.box import RESOURCES_REGISTRY
+from page import Restyler
+from page import get_resource
 
+class Cells(object):
+    """Provides information on what cells charts are located in."""
 
-class Box(object):
+    def __init__(self, chart_name):
+        self.chart_name = chart_name
+
+    def get_cells(self):
+        return [self.chart_name]
+
+    def get_column_for_chart(self, chart_id):
+        return self.chart_name
+        
+    def get_new_row_for_chart(self, chart_id):
+        return False
+        
+class Layout(object):
+    """Provides information on the layout and its cells."""
+
+    def __init__(self, request):
+        box_id = request.matchdict['box_id_with_extension']
+        self.chart_name = box_id.split('.')[0]
+
+    def get_cells(self):
+        return Cells(self.chart_name)
+
+class Box:
     """Shows one box on the page"""
 
     def __init__(self, request):
+        self.layout = Layout(request)
+        cells = self.layout.get_cells()
+        self.restyler = Restyler(request, cells)
+
+
         self.body = ''
         self.javascript = ''
         if request.matchdict == {'box_id_with_extension': u'favicon.ico'}:
@@ -44,7 +73,7 @@ class Box(object):
     def render_html(self, request):
         """Render a resource as HTML"""
         packages = set(['corechart'])
-        chart = get_chart_infos(self, request)[0]
+        chart = self.restyler.get_chart_infos(request)[0]
         if 'charttype' in chart and 'data' in chart:
             if chart['charttype'] == 'Table':
                 packages.add(chart['charttype'].lower())
