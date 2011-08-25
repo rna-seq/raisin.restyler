@@ -1,5 +1,6 @@
 """Box Base factory"""
 
+import os
 from config import JSON
 from config import CSV
 from renderers import render_javascript
@@ -27,8 +28,7 @@ class Layout(object):
 
     def __init__(self, request):
         """Layout"""
-        box_id = request.matchdict['box_id_with_extension']
-        self.chart_name = box_id.split('.')[0]
+        self.chart_name = request.matchdict['box_name']
 
     def get_cells(self):
         """Get the cells"""
@@ -65,23 +65,19 @@ class Box:
         self.layout = Layout(request)
         self.body = ''
         self.javascript = ''
-        if request.matchdict == {'box_id_with_extension': u'favicon.ico'}:
-            return
-
-        box_id = request.matchdict['box_id_with_extension']
-        self.chart_name, chart_format = box_id.split('.')
-
+        self.chart_name = request.matchdict['box_name']
+        chart_format = os.path.splitext(request.environ['PATH_INFO'])[1]
         # Go through the registry, and find the resource for this box
         # XXX This should be a dictionary
         for resource in RESOURCES_REGISTRY:
             if resource[0] == self.chart_name:
                 self.resources = [resource]
 
-        if chart_format == 'html':
+        if chart_format == '.html':
             self.render_html(request)
-        elif chart_format == 'csv':
+        elif chart_format == '.csv':
             self.render_csv(request, self.chart_name)
-        elif chart_format == 'json':
+        elif chart_format == '.json':
             self.render_json(request, self.chart_name)
         else:
             print "Format not supported %s" % chart_format
