@@ -2,21 +2,22 @@ import sys
 import unittest
 
 
-class UtilsTest(unittest.TestCase):
+class BoxTest(unittest.TestCase):
+
     def setUp(self):
         unittest.TestCase.setUp(self)
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
 
-    def test_get_chart_infos(self):
+    def test_box(self):
         pass
 
 
 # make the test suite.
 def suite():
     loader = unittest.TestLoader()
-    testsuite = loader.loadTestsFromTestCase(UtilsTest)
+    testsuite = loader.loadTestsFromTestCase(BoxTest)
     return testsuite
 
 
