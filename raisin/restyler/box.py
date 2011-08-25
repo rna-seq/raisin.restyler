@@ -21,6 +21,7 @@ class Cells(object):
         """Get the cells"""
         return [self.chart_name]
 
+
 class Layout(object):
     """Provides information on the layout and its cells."""
 
@@ -32,6 +33,7 @@ class Layout(object):
     def get_cells(self):
         """Get the cells"""
         return Cells(self.chart_name)
+
 
 class BoxRestyler(Restyler):
     """Gets a resource and renders it as a chart"""
@@ -52,6 +54,7 @@ class BoxRestyler(Restyler):
         """Get the chart infos"""
         return Restyler.get_chart_infos(self, request)
 
+
 class Box:
     """Shows one box on the page"""
 
@@ -64,7 +67,6 @@ class Box:
         self.javascript = ''
         if request.matchdict == {'box_id_with_extension': u'favicon.ico'}:
             return
-
 
         box_id = request.matchdict['box_id_with_extension']
         self.chart_name, chart_format = box_id.split('.')
