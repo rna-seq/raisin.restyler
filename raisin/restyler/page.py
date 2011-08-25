@@ -4,14 +4,15 @@ import urlparse
 import pickle
 from config import JSON
 from config import PICKLED
-from utils import render_javascript
-from utils import render_chartoptions
-from utils import render_description
+from renderers import render_javascript
+from renderers import render_chartoptions
+from renderers import render_description
 from raisin.box import RESOURCES_REGISTRY
 from raisin.page import PAGES
 from raisin.restkit import get_resource_by_uri
 from raisin.box import RESOURCES
 from raisin.box import BOXES
+
 
 def get_resource(name, content_type, kwargs):
     """Helper method to get a resource by name"""
@@ -154,7 +155,7 @@ class Restyler(object):
                 chart['chartoptions_rendered'] = rendered
                 chart['csv_download_url'] = url + "%s.csv" % chart['id']
                 chart['html_download_url'] = url + "%s.html" % chart['id']
-            chart['module_id'] = self.cells.get_column_for_chart(chart['id'])
+            chart['module_id'] = self.get_module_id(chart)
             if self.cells.get_new_row_for_chart(chart['id']):
                 chart['module_style'] = "clear: both;"
             else:
@@ -167,6 +168,10 @@ class Restyler(object):
             chart['div_id'] = chart['id'] + '_div'
             charts.append(chart)
         return charts
+
+    def get_module_id(self, chart):
+        """Return the HTML id attribute value for the chart."""
+        return self.cells.get_column_for_chart(chart['id'])
 
     def get_packages(self):
         """Google Chart tools has a lot of packages covered in the corecharts
@@ -203,8 +208,8 @@ class Restyler(object):
         """Get all augmented charts from the resources in the context."""
         charts = []
         for chart_name, method, content_types in self.resources:
-            # Fill an empty chart with the statistics resources based on the wanted
-            # content types
+            # Fill an empty chart with the statistics resources based on the
+            # wanted content types
             chart = BOXES[chart_name].copy()
             if not 'id' in chart:
                 # At least put in a default id
@@ -223,6 +228,7 @@ class Restyler(object):
                 method(self, chart)
                 charts.append(chart)
         return charts
+
 
 class Page(object):
     """Renders a page with boxes in a layout."""
