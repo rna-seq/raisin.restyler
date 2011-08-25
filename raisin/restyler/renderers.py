@@ -53,9 +53,9 @@ def render_description(request, description, description_type):
     elif description_type == 'properties':
         rendered = render_properties(description)
     elif description_type == 'linklist':
-        rendered = render_linklist(description, request)
+        rendered = render_linklist(description, request.application_url)
     elif description_type == 'projectlist':
-        rendered = render_projectlist(description, request)
+        rendered = render_projectlist(description, request.application_url)
     else:
         rendered = render_list(description)
     rendered = '\n'.join(rendered)
@@ -84,14 +84,14 @@ def render_properties(description):
     return rendered
 
 
-def render_linklist(description, request):
+def render_linklist(description, application_url):
     """Render description as linklist"""
     rendered = []
     rendered.append('<ul class="linklist">')
     for line in description:
         rendered.append(("""<li class="schemagroup sg_announcements" """
                          """style="float:none;">"""))
-        link = request.application_url + line['URL']
+        link = application_url + line['URL']
         rendered.append("""<a href="%s">%s</a>""" % (link,
                                                      line['Experiment id']))
         rendered.append("""</li>""")
@@ -99,13 +99,13 @@ def render_linklist(description, request):
     return rendered
 
 
-def render_projectlist(description, request):
+def render_projectlist(description, application_url):
     """Render description as projectlist"""
     rendered = []
     rendered.append('<ul class="projectlist">')
     for line in description:
         rendered.append("""<li>""")
-        link = request.application_url + line['URL']
+        link = application_url + line['URL']
         rendered.append("""<a href="%s">%s</a>""" % (link,
                                                      line['Project Id']))
         rendered.append("""</li>""")
