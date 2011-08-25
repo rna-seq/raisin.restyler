@@ -2,57 +2,72 @@
 
 from config import JSON
 from config import CSV
-from utils import render_javascript
-from utils import render_chartoptions
-from utils import render_description
+from renderers import render_javascript
+from renderers import render_chartoptions
+from renderers import render_description
 from raisin.box import RESOURCES_REGISTRY
 from page import Restyler
 from page import get_resource
+
 
 class Cells(object):
     """Provides information on what cells charts are located in."""
 
     def __init__(self, chart_name):
+        """Cells"""
         self.chart_name = chart_name
 
     def get_cells(self):
+        """Get the cells"""
         return [self.chart_name]
 
-    def get_column_for_chart(self, chart_id):
-        return self.chart_name
-        
-    def get_new_row_for_chart(self, chart_id):
-        return False
-        
 class Layout(object):
     """Provides information on the layout and its cells."""
 
     def __init__(self, request):
+        """Layout"""
         box_id = request.matchdict['box_id_with_extension']
         self.chart_name = box_id.split('.')[0]
 
     def get_cells(self):
+        """Get the cells"""
         return Cells(self.chart_name)
+
+class BoxRestyler(Restyler):
+    """Gets a resource and renders it as a chart"""
+
+    def __init__(self, request, cells):
+        """Box Restyler"""
+        Restyler.__init__(self, request, cells)
+
+    def get_charts(self, request):
+        """Get the charts"""
+        return []
+
+    def get_module_id(self, chart):
+        """Get the module id"""
+        return chart['id']
+
+    def get_chart_infos(self, request):
+        """Get the chart infos"""
+        return Restyler.get_chart_infos(self, request)
 
 class Box:
     """Shows one box on the page"""
 
     def __init__(self, request):
+        """Box"""
+        self.charts = []
+        self.chart_type = None
         self.layout = Layout(request)
-        cells = self.layout.get_cells()
-        self.restyler = Restyler(request, cells)
-
-
         self.body = ''
         self.javascript = ''
         if request.matchdict == {'box_id_with_extension': u'favicon.ico'}:
             return
 
-        self.charts = None
-        self.chart_type = None
 
         box_id = request.matchdict['box_id_with_extension']
-        self.chart_name, self.chart_format = box_id.split('.')
+        self.chart_name, chart_format = box_id.split('.')
 
         # Go through the registry, and find the resource for this box
         # XXX This should be a dictionary
@@ -60,20 +75,22 @@ class Box:
             if resource[0] == self.chart_name:
                 self.resources = [resource]
 
-        if self.chart_format == 'html':
+        if chart_format == 'html':
             self.render_html(request)
-        elif self.chart_format == 'csv':
-            self.render_csv(request)
-        elif self.chart_format == 'json':
-            self.render_json(request)
+        elif chart_format == 'csv':
+            self.render_csv(request, self.chart_name)
+        elif chart_format == 'json':
+            self.render_json(request, self.chart_name)
         else:
-            print "Format not supported %s" % self.chart_format
+            print "Format not supported %s" % chart_format
             raise AttributeError
 
     def render_html(self, request):
         """Render a resource as HTML"""
+        cells = self.layout.get_cells()
+        restyler = BoxRestyler(request, cells)
         packages = set(['corechart'])
-        chart = self.restyler.get_chart_infos(request)[0]
+        chart = restyler.get_chart_infos(request)[0]
         if 'charttype' in chart and 'data' in chart:
             if chart['charttype'] == 'Table':
                 packages.add(chart['charttype'].lower())
@@ -124,14 +141,14 @@ class Box:
         self.charts = [chart]
         self.javascript = render_javascript(self.charts, packages)
 
-    def render_csv(self, request):
+    def render_csv(self, request, chart_name):
         """Render a resource as CSV"""
-        self.body = get_resource(self.chart_name,
+        self.body = get_resource(chart_name,
                                  CSV,
                                  request.matchdict)
 
-    def render_json(self, request):
+    def render_json(self, request, chart_name):
         """Render a resource as JSON"""
-        self.body = get_resource(self.chart_name,
+        self.body = get_resource(chart_name,
                                  JSON,
                                  request.matchdict)
