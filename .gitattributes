@@ -6,10 +6,10 @@ raisin/restyler/__init__.py -text
 raisin/restyler/box.py -text
 raisin/restyler/config.py -text
 raisin/restyler/page.py -text
+raisin/restyler/renderers.py -text
 raisin/restyler/templates/javascript.pt -text
 raisin/restyler/tests/test_page.py -text
 raisin/restyler/tests/test_utils.py -text
-raisin/restyler/utils.py -text
 /setup.cfg -text
 /setup.py -text
 /version.txt -text

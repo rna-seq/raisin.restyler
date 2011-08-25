@@ -1,6 +1,7 @@
-"""Utility methods for rendering, charts and resources"""
+"""Utility methods for rendering"""
 
 from zope.pagetemplate.pagetemplatefile import PageTemplateFile
+
 
 def render_javascript(charts, packages):
     """Render the javascript for the charts and packages"""
