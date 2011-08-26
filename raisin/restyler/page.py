@@ -1,7 +1,6 @@
 """Page object rendered according to a layout"""
 
 import urlparse
-import pickle
 from config import JSON
 from config import PICKLED
 from renderers import render_javascript
@@ -9,7 +8,6 @@ from renderers import render_chartoptions
 from renderers import render_description
 from raisin.box import RESOURCES_REGISTRY
 from raisin.page import PAGES
-from raisin.box import RESOURCES
 from raisin.box import BOXES
 from raisin.restkit import ResourceProvider
 from resource import Resource
@@ -304,14 +302,10 @@ class Page(object):
             items['list'] = []
             for item in experiment_runs['table_data']:
                 url = request.application_url + item[4]
-                if tab_name == 'experiments':
-                    items['list'].append({'title': item[3],
-                                          'url': url})
-                else:
-                    items['list'].append({'title': item[3],
-                                          'url': url[:-len('overview')] + tab_name})
+                if not tab_name == 'experiments':
+                    url = url[:-len('overview')] + tab_name
+                items['list'].append({'title': item[3], 'url': url})
         return items
-
 
     def get_tabs(self, request):
         """Returns a list of dictionaries of tabs"""
