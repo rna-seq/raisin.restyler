@@ -4,8 +4,8 @@ import pickle
 from raisin.restyler.resource import Resource
 from raisin.restyler.config import PICKLED
 from raisin.restyler.config import CSV
-
 MARKER = "ABCDEFGHIFKLMNOPQRSTUVWXYZ"
+
 
 class DummyResourceProvider:
 
@@ -14,6 +14,7 @@ class DummyResourceProvider:
             return pickle.dumps(MARKER)
         else:
             return MARKER
+
 
 class ResourceTest(unittest.TestCase):
 
