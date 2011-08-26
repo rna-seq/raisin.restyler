@@ -9,23 +9,10 @@ from renderers import render_chartoptions
 from renderers import render_description
 from raisin.box import RESOURCES_REGISTRY
 from raisin.page import PAGES
-from raisin.restkit import get_resource_by_uri
 from raisin.box import RESOURCES
 from raisin.box import BOXES
-
-
-def get_resource(name, content_type, kwargs):
-    """Helper method to get a resource by name"""
-    try:
-        uri = RESOURCES[name]['uri'] % kwargs
-    except KeyError:
-        print RESOURCES[name]['uri'], kwargs
-        raise
-    result = get_resource_by_uri(uri, content_type)
-    if not result is None:
-        if content_type == PICKLED:
-            result = pickle.loads(result)
-    return result
+from raisin.restkit import ResourceProvider
+from resource import Resource
 
 
 def get_absolute_url(request):
@@ -131,6 +118,8 @@ class Restyler(object):
     """Gets resources and renders them as charts"""
 
     def __init__(self, request, cells):
+        resource_provider = ResourceProvider()
+        self.resource = Resource(resource_provider)
         self.cells = cells
         self.resources = self.get_resources()
         self.charts = self.get_charts(request)
@@ -207,22 +196,20 @@ class Restyler(object):
     def get_chart_infos(self, request):
         """Get all augmented charts from the resources in the context."""
         charts = []
-        for chart_name, method, content_types in self.resources:
+        for name, method, content_types in self.resources:
             # Fill an empty chart with the statistics resources based on the
             # wanted content types
-            chart = BOXES[chart_name].copy()
+            chart = BOXES[name].copy()
             if not 'id' in chart:
                 # At least put in a default id
-                chart['id'] = chart_name
+                chart['id'] = name
             success = True
-            for content_type in content_types:
-                result = get_resource(chart_name,
-                                      content_type,
-                                      request.matchdict)
+            for ctype in content_types:
+                result = self.resource.get(name, ctype, request.matchdict)
                 if result is None:
                     success = False
                 else:
-                    chart[content_type] = result
+                    chart[ctype] = result
             if success:
                 # Call the method on the current context
                 method(self, chart)
@@ -298,8 +285,33 @@ class Page(object):
         """Returns a list of dictionaries of sub items"""
         items = None
         if self.layout.get_layout_id() == 'experiment':
-            items = get_run_items(request)
+            items = {}
+            items['title'] = 'RNASeq Pipeline Runs'
+            items['level'] = 'Experiment'
+            items['toggle'] = 'Show %(title)s for this %(level)s' % items
+            experiment_runs = self.restyler.resource.get('experiment_runs',
+                                                         PICKLED,
+                                                         request.matchdict)
+            if experiment_runs is None:
+                description = [('Project Id', 'string'),
+                               ('Experiment Id', 'string'),
+                               ('Run Id', 'string'),
+                               ('Run Url', 'string')]
+                experiment_runs = {'table_data': [],
+                                   'table_description': description,
+                                  }
+            tab_name = request.matchdict.get('tab_name', None)
+            items['list'] = []
+            for item in experiment_runs['table_data']:
+                url = request.application_url + item[4]
+                if tab_name == 'experiments':
+                    items['list'].append({'title': item[3],
+                                          'url': url})
+                else:
+                    items['list'].append({'title': item[3],
+                                          'url': url[:-len('overview')] + tab_name})
         return items
+
 
     def get_tabs(self, request):
         """Returns a list of dictionaries of tabs"""
@@ -338,33 +350,3 @@ class Page(object):
     def get_javascript(self):
         """Get the precalculated javascript"""
         return self.restyler.javascript
-
-
-def get_run_items(request):
-    """Return items for run"""
-    items = {}
-    items['title'] = 'RNASeq Pipeline Runs'
-    items['level'] = 'Experiment'
-    items['toggle'] = 'Show %(title)s for this %(level)s' % items
-    experiment_runs = get_resource('experiment_runs',
-                                   PICKLED,
-                                   request.matchdict)
-    if experiment_runs is None:
-        description = [('Project Id', 'string'),
-                       ('Experiment Id', 'string'),
-                       ('Run Id', 'string'),
-                       ('Run Url', 'string')]
-        experiment_runs = {'table_data': [],
-                           'table_description': description,
-                          }
-    tab_name = request.matchdict.get('tab_name', None)
-    items['list'] = []
-    for item in experiment_runs['table_data']:
-        url = request.application_url + item[4]
-        if tab_name == 'experiments':
-            items['list'].append({'title': item[3],
-                                  'url': url})
-        else:
-            items['list'].append({'title': item[3],
-                                  'url': url[:-len('overview')] + tab_name})
-    return items
