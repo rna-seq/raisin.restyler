@@ -241,7 +241,7 @@ class Page(object):
             if not request.matchdict.get('parameter_values', None) is None:
                 title = "Replicate: %(parameter_values)s" % request.matchdict
             if not request.matchdict.get('run_name', None) is None:
-                title = "RNASeq Pipeline Run: %(run_name)s" % request.matchdict
+                title = "RNASeq Pipeline Experiment: %(run_name)s" % request.matchdict
         else:
             raise AttributeError
         return title
@@ -267,7 +267,7 @@ class Page(object):
                         _pro + '/tab/experiments/'),
             'parameters': ('Replicate: %(parameter_values)s',
                            _pro + _par + _tab),
-            'run': ('Run: %(run_name)s',
+            'run': ('Experiment: %(run_name)s',
                     _pro + _par + _run + _tab)
             }
 
@@ -284,7 +284,7 @@ class Page(object):
         items = None
         if self.layout.get_layout_id() == 'experiment':
             items = {}
-            items['title'] = 'RNASeq Pipeline Runs'
+            items['title'] = 'RNASeq Pipeline Experiments'
             items['level'] = 'Replicate'
             items['toggle'] = 'Show %(title)s for this %(level)s' % items
             experiment_runs = self.restyler.resource.get('experiment_runs',
@@ -293,8 +293,8 @@ class Page(object):
             if experiment_runs is None:
                 description = [('Project Id', 'string'),
                                ('Replicate Id', 'string'),
-                               ('Run Id', 'string'),
-                               ('Run Url', 'string')]
+                               ('Experiment Id', 'string'),
+                               ('Experiment Url', 'string')]
                 experiment_runs = {'table_data': [],
                                    'table_description': description,
                                   }
