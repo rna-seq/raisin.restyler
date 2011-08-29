@@ -93,7 +93,7 @@ def render_linklist(description, application_url):
                          """style="float:none;">"""))
         link = application_url + line['URL']
         rendered.append("""<a href="%s">%s</a>""" % (link,
-                                                     line['Experiment id']))
+                                                     line['Replicate id']))
         rendered.append("""</li>""")
     rendered.append('</ul>')
     return rendered

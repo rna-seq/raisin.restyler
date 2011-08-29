@@ -239,7 +239,7 @@ class Page(object):
                            'run',
                            'lane']:
             if not request.matchdict.get('parameter_values', None) is None:
-                title = "Experiment: %(parameter_values)s" % request.matchdict
+                title = "Replicate: %(parameter_values)s" % request.matchdict
             if not request.matchdict.get('run_name', None) is None:
                 title = "RNASeq Pipeline Run: %(run_name)s" % request.matchdict
         else:
@@ -265,7 +265,7 @@ class Page(object):
                          '/'),
             'project': ('Project: %(project_name)s',
                         _pro + '/tab/experiments/'),
-            'parameters': ('Experiment: %(parameter_values)s',
+            'parameters': ('Replicate: %(parameter_values)s',
                            _pro + _par + _tab),
             'run': ('Run: %(run_name)s',
                     _pro + _par + _run + _tab)
@@ -285,14 +285,14 @@ class Page(object):
         if self.layout.get_layout_id() == 'experiment':
             items = {}
             items['title'] = 'RNASeq Pipeline Runs'
-            items['level'] = 'Experiment'
+            items['level'] = 'Replicate'
             items['toggle'] = 'Show %(title)s for this %(level)s' % items
             experiment_runs = self.restyler.resource.get('experiment_runs',
                                                          PICKLED,
                                                          request.matchdict)
             if experiment_runs is None:
                 description = [('Project Id', 'string'),
-                               ('Experiment Id', 'string'),
+                               ('Replicate Id', 'string'),
                                ('Run Id', 'string'),
                                ('Run Url', 'string')]
                 experiment_runs = {'table_data': [],

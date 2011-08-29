@@ -57,7 +57,7 @@ class ResourceTest(unittest.TestCase):
                {'url': 'http://example.com/project/ENCODE/tab/experiments/',
                 'title': 'Project: ENCODE'},
                {'url': 'http://example.com/project/ENCODE/None/None/tab/None',
-                'title': 'Experiment: None'}]
+                'title': 'Replicate: None'}]
         self.failUnless(p.get_breadcrumbs(request) == bcr)
 
 
