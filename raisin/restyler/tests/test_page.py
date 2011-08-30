@@ -54,10 +54,11 @@ class ResourceTest(unittest.TestCase):
         p = page.Page(request)
         bcr = [{'url': 'http://example.com/',
                 'title': 'Projects'},
-               {'url': 'http://example.com/project/ENCODE/tab/experiments/',
+               {'url': 'http://example.com/project/ENCODE/tab/replicates/',
                 'title': 'Project: ENCODE'},
                {'url': 'http://example.com/project/ENCODE/None/None/tab/None',
                 'title': 'Replicate: None'}]
+        print p.get_breadcrumbs(request)
         self.failUnless(p.get_breadcrumbs(request) == bcr)
 
 

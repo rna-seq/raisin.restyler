@@ -82,9 +82,9 @@ class Layout(object):
     def __init__(self, request):
         self.layout_id = request.matched_route.name[len('p1_'):]
         self.layout = PAGES[self.layout_id]
-        if self.layout_id in ['homepage', 'experiment_subset']:
+        if self.layout_id in ['homepage', 'replicate_subset']:
             view = self.layout
-        elif self.layout_id in ['project', 'experiment', 'run', 'lane']:
+        elif self.layout_id in ['project', 'replicate', 'run', 'lane']:
             tab_name = request.matchdict.get('tab_name', None)
             if tab_name in self.layout:
                 view = self.layout[tab_name]
@@ -228,20 +228,21 @@ class Page(object):
 
     def title(self, request):
         """Returns the title of the page depending on the layout"""
+        matchdict = request.matchdict
         layout_id = self.layout.get_layout_id()
-        title = "Project: %(project_name)s" % request.matchdict
-        if layout_id == 'experiment_subset':
-            title = "Subset: %(parameter_values)s" % request.matchdict
+        title = "Project: %(project_name)s" % matchdict
+        if layout_id == 'replicate_subset':
+            title = "Subset: %(parameter_values)s" % matchdict
         elif layout_id in ['homepage',
-                           'experiment_subset',
+                           'replicate_subset',
                            'project',
-                           'experiment',
+                           'replicate',
                            'run',
                            'lane']:
-            if not request.matchdict.get('parameter_values', None) is None:
-                title = "Replicate: %(parameter_values)s" % request.matchdict
-            if not request.matchdict.get('run_name', None) is None:
-                title = "RNASeq Pipeline Experiment: %(run_name)s" % request.matchdict
+            if not matchdict.get('parameter_values', None) is None:
+                title = "Replicate: %(parameter_values)s" % matchdict
+            if not matchdict.get('run_name', None) is None:
+                title = "Experiment: %(run_name)s" % matchdict
         else:
             raise AttributeError
         return title
@@ -264,7 +265,7 @@ class Page(object):
             'homepage': ('Projects',
                          '/'),
             'project': ('Project: %(project_name)s',
-                        _pro + '/tab/experiments/'),
+                        _pro + '/tab/replicates/'),
             'parameters': ('Replicate: %(parameter_values)s',
                            _pro + _par + _tab),
             'run': ('Experiment: %(run_name)s',
@@ -282,27 +283,27 @@ class Page(object):
     def get_items(self, request):
         """Returns a list of dictionaries of sub items"""
         items = None
-        if self.layout.get_layout_id() == 'experiment':
+        if self.layout.get_layout_id() == 'replicate':
             items = {}
-            items['title'] = 'RNASeq Pipeline Experiments'
+            items['title'] = 'Experiments'
             items['level'] = 'Replicate'
             items['toggle'] = 'Show %(title)s for this %(level)s' % items
-            experiment_runs = self.restyler.resource.get('experiment_runs',
+            replicate_runs = self.restyler.resource.get('replicate_runs',
                                                          PICKLED,
                                                          request.matchdict)
-            if experiment_runs is None:
+            if replicate_runs is None:
                 description = [('Project Id', 'string'),
                                ('Replicate Id', 'string'),
                                ('Experiment Id', 'string'),
                                ('Experiment Url', 'string')]
-                experiment_runs = {'table_data': [],
+                replicate_runs = {'table_data': [],
                                    'table_description': description,
                                   }
             tab_name = request.matchdict.get('tab_name', None)
             items['list'] = []
-            for item in experiment_runs['table_data']:
+            for item in replicate_runs['table_data']:
                 url = request.application_url + item[4]
-                if not tab_name == 'experiments':
+                if not tab_name == 'replicates':
                     url = url[:-len('overview')] + tab_name
                 items['list'].append({'title': item[3], 'url': url})
         return items
@@ -324,7 +325,7 @@ class Page(object):
 
         mapping = {
             'project': _pro,
-            'experiment': _pro + _par,
+            'replicate': _pro + _par,
             'run': _pro + _par + _run,
             'lane': _pro + _par + _run + _lan,
             }
