@@ -45,9 +45,9 @@ class ResourceTest(unittest.TestCase):
     def test_get_breadcrumbs_3(self):
         request = DummyRequest()
         request.matched_route = MatchedRoute()
-        request.matched_route.name = 'p1_run'
+        request.matched_route.name = 'p1_experiment'
         request.matchdict = {'project_name': 'ENCODE',
-                             'run_name': 'Ging001N',
+                             'experiment_name': 'Ging001N',
                              'parameter_list': None,
                              'parameter_values': None,
                              'tab_name': None}

@@ -84,7 +84,7 @@ class Layout(object):
         self.layout = PAGES[self.layout_id]
         if self.layout_id in ['homepage', 'replicate_subset']:
             view = self.layout
-        elif self.layout_id in ['project', 'replicate', 'run', 'lane']:
+        elif self.layout_id in ['project', 'replicate', 'experiment', 'lane']:
             tab_name = request.matchdict.get('tab_name', None)
             if tab_name in self.layout:
                 view = self.layout[tab_name]
@@ -237,12 +237,12 @@ class Page(object):
                            'replicate_subset',
                            'project',
                            'replicate',
-                           'run',
+                           'experiment',
                            'lane']:
             if not matchdict.get('parameter_values', None) is None:
                 title = "Replicate: %(parameter_values)s" % matchdict
-            if not matchdict.get('run_name', None) is None:
-                title = "Experiment: %(run_name)s" % matchdict
+            if not matchdict.get('experiment_name', None) is None:
+                title = "Experiment: %(experiment_name)s" % matchdict
         else:
             raise AttributeError
         return title
@@ -258,7 +258,7 @@ class Page(object):
 
         _pro = '/project/%(project_name)s'
         _par = '/%(parameter_list)s/%(parameter_values)s'
-        _run = '/run/%(run_name)s'
+        _exp = '/experiment/%(experiment_name)s'
         _tab = '/tab/%(tab_name)s'
 
         mapping = {
@@ -268,8 +268,8 @@ class Page(object):
                         _pro + '/tab/replicates/'),
             'parameters': ('Replicate: %(parameter_values)s',
                            _pro + _par + _tab),
-            'run': ('Experiment: %(run_name)s',
-                    _pro + _par + _run + _tab)
+            'experiment': ('Experiment: %(experiment_name)s',
+                    _pro + _par + _exp + _tab)
             }
 
         breadcrumbs = []
@@ -282,26 +282,28 @@ class Page(object):
 
     def get_items(self, request):
         """Returns a list of dictionaries of sub items"""
+        matchdict = request.matchdict
         items = None
         if self.layout.get_layout_id() == 'replicate':
             items = {}
             items['title'] = 'Experiments'
             items['level'] = 'Replicate'
             items['toggle'] = 'Show %(title)s for this %(level)s' % items
-            replicate_runs = self.restyler.resource.get('replicate_runs',
-                                                         PICKLED,
-                                                         request.matchdict)
-            if replicate_runs is None:
+            resource = 'replicate_experiments'
+            replicate_experiments = self.restyler.resource.get(resource,
+                                                               PICKLED,
+                                                               matchdict)
+            if replicate_experiments is None:
                 description = [('Project Id', 'string'),
                                ('Replicate Id', 'string'),
                                ('Experiment Id', 'string'),
                                ('Experiment Url', 'string')]
-                replicate_runs = {'table_data': [],
+                replicate_experiments = {'table_data': [],
                                    'table_description': description,
                                   }
-            tab_name = request.matchdict.get('tab_name', None)
+            tab_name = matchdict.get('tab_name', None)
             items['list'] = []
-            for item in replicate_runs['table_data']:
+            for item in replicate_experiments['table_data']:
                 url = request.application_url + item[4]
                 if not tab_name == 'replicates':
                     url = url[:-len('overview')] + tab_name
@@ -319,15 +321,15 @@ class Page(object):
 
         _pro = '/project/%(project_name)s'
         _par = '/%(parameter_list)s/%(parameter_values)s'
-        _run = '/run/%(run_name)s'
+        _exp = '/experiment/%(experiment_name)s'
         _lan = '/lane/%(lane_name)s'
         _tab = '/tab/%s/'
 
         mapping = {
             'project': _pro,
             'replicate': _pro + _par,
-            'run': _pro + _par + _run,
-            'lane': _pro + _par + _run + _lan,
+            'experiment': _pro + _par + _exp,
+            'lane': _pro + _par + _exp + _lan,
             }
 
         for tab in layout['tabbed_views']:
