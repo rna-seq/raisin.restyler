@@ -68,20 +68,20 @@ class Box:
         self.layout = Layout(request)
         self.body = ''
         self.javascript = ''
-        chart_name = request.matchdict['box_name']
+        self.chart_name = request.matchdict['box_name']
         chart_format = os.path.splitext(request.environ['PATH_INFO'])[1]
         # Go through the registry, and find the resource for this box
         # XXX This should be a dictionary
         for res in RESOURCES_REGISTRY:
-            if res[0] == chart_name:
+            if res[0] == self.chart_name:
                 self.resources = [res]
 
         if chart_format == '.html':
             self.render_html(request)
         elif chart_format == '.csv':
-            self.body = resource.get(chart_name, CSV, request.matchdict)
+            self.body = resource.get(self.chart_name, CSV, request.matchdict)
         elif chart_format == '.json':
-            self.body = resource.get(chart_name, JSON, request.matchdict)
+            self.body = resource.get(self.chart_name, JSON, request.matchdict)
         else:
             print "Format not supported %s" % chart_format
             raise AttributeError
