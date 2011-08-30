@@ -7,7 +7,7 @@ from config import PICKLED
 
 
 class Resource:
-    """Fetch RESTful resource using a provider implmenting the method: 
+    """Fetch RESTful resource using a provider implementing the method:
     def get(uri, content_type)
     """
 
