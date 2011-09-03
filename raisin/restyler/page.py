@@ -82,9 +82,9 @@ class Layout(object):
     def __init__(self, request):
         self.layout_id = request.matched_route.name[len('p1_'):]
         self.layout = PAGES[self.layout_id]
-        if self.layout_id in ['homepage', 'replicate_subset']:
+        if self.layout_id in ['homepage', 'experiment_subset']:
             view = self.layout
-        elif self.layout_id in ['project', 'replicate', 'experiment', 'lane']:
+        elif self.layout_id in ['project', 'experiment', 'replicate', 'lane']:
             tab_name = request.matchdict.get('tab_name', None)
             if tab_name in self.layout:
                 view = self.layout[tab_name]
@@ -231,18 +231,18 @@ class Page(object):
         matchdict = request.matchdict
         layout_id = self.layout.get_layout_id()
         title = "Project: %(project_name)s" % matchdict
-        if layout_id == 'replicate_subset':
+        if layout_id == 'experiment_subset':
             title = "Subset: %(parameter_values)s" % matchdict
         elif layout_id in ['homepage',
-                           'replicate_subset',
+                           'experiment_subset',
                            'project',
-                           'replicate',
                            'experiment',
+                           'replicate',
                            'lane']:
             if not matchdict.get('parameter_values', None) is None:
-                title = "Replicate: %(parameter_values)s" % matchdict
-            if not matchdict.get('experiment_name', None) is None:
-                title = "Experiment: %(experiment_name)s" % matchdict
+                title = "Experiment: %(parameter_values)s" % matchdict
+            if not matchdict.get('replicate_name', None) is None:
+                title = "Replicate: %(replicate_name)s" % matchdict
         else:
             raise AttributeError
         return title
@@ -258,17 +258,17 @@ class Page(object):
 
         _pro = '/project/%(project_name)s'
         _par = '/%(parameter_list)s/%(parameter_values)s'
-        _exp = '/experiment/%(experiment_name)s'
+        _exp = '/replicate/%(replicate_name)s'
         _tab = '/tab/%(tab_name)s'
 
         mapping = {
             'homepage': ('Projects',
                          '/'),
             'project': ('Project: %(project_name)s',
-                        _pro + '/tab/replicates/'),
-            'parameters': ('Replicate: %(parameter_values)s',
+                        _pro + '/tab/experiments/'),
+            'parameters': ('Experiment: %(parameter_values)s',
                            _pro + _par + _tab),
-            'experiment': ('Experiment: %(experiment_name)s',
+            'replicate': ('Replicate: %(replicate_name)s',
                     _pro + _par + _exp + _tab)
             }
 
@@ -284,28 +284,28 @@ class Page(object):
         """Returns a list of dictionaries of sub items"""
         matchdict = request.matchdict
         items = None
-        if self.layout.get_layout_id() == 'replicate':
+        if self.layout.get_layout_id() == 'experiment':
             items = {}
-            items['title'] = 'Experiments'
-            items['level'] = 'Replicate'
+            items['title'] = 'Replicates'
+            items['level'] = 'Experiment'
             items['toggle'] = 'Show %(title)s for this %(level)s' % items
-            resource = 'replicate_experiments'
-            replicate_experiments = self.restyler.resource.get(resource,
+            resource = 'experiment_replicates'
+            experiment_replicates = self.restyler.resource.get(resource,
                                                                PICKLED,
                                                                matchdict)
-            if replicate_experiments is None:
+            if experiment_replicates is None:
                 description = [('Project Id', 'string'),
-                               ('Replicate Id', 'string'),
                                ('Experiment Id', 'string'),
-                               ('Experiment Url', 'string')]
-                replicate_experiments = {'table_data': [],
+                               ('Replicate Id', 'string'),
+                               ('Replicate Url', 'string')]
+                experiment_replicates = {'table_data': [],
                                    'table_description': description,
                                   }
             tab_name = matchdict.get('tab_name', None)
             items['list'] = []
-            for item in replicate_experiments['table_data']:
+            for item in experiment_replicates['table_data']:
                 url = request.application_url + item[4]
-                if not tab_name == 'replicates':
+                if not tab_name == 'experiments':
                     url = url[:-len('overview')] + tab_name
                 items['list'].append({'title': item[3], 'url': url})
         return items
@@ -321,14 +321,14 @@ class Page(object):
 
         _pro = '/project/%(project_name)s'
         _par = '/%(parameter_list)s/%(parameter_values)s'
-        _exp = '/experiment/%(experiment_name)s'
+        _exp = '/replicate/%(replicate_name)s'
         _lan = '/lane/%(lane_name)s'
         _tab = '/tab/%s/'
 
         mapping = {
             'project': _pro,
-            'replicate': _pro + _par,
-            'experiment': _pro + _par + _exp,
+            'experiment': _pro + _par,
+            'replicate': _pro + _par + _exp,
             'lane': _pro + _par + _exp + _lan,
             }
 

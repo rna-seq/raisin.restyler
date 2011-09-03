@@ -45,19 +45,19 @@ class ResourceTest(unittest.TestCase):
     def test_get_breadcrumbs_3(self):
         request = DummyRequest()
         request.matched_route = MatchedRoute()
-        request.matched_route.name = 'p1_experiment'
+        request.matched_route.name = 'p1_replicate'
         request.matchdict = {'project_name': 'ENCODE',
-                             'experiment_name': 'Ging001N',
+                             'replicate_name': 'Ging001N',
                              'parameter_list': None,
                              'parameter_values': None,
                              'tab_name': None}
         p = page.Page(request)
         bcr = [{'url': 'http://example.com/',
                 'title': 'Projects'},
-               {'url': 'http://example.com/project/ENCODE/tab/replicates/',
+               {'url': 'http://example.com/project/ENCODE/tab/experiments/',
                 'title': 'Project: ENCODE'},
                {'url': 'http://example.com/project/ENCODE/None/None/tab/None',
-                'title': 'Replicate: None'}]
+                'title': 'Experiment: None'}]
         print p.get_breadcrumbs(request)
         self.failUnless(p.get_breadcrumbs(request) == bcr)
 
