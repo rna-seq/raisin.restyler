@@ -1,0 +1,10 @@
+/*.pyc
+/*.pyo
+raisin/*.pyc
+raisin/*.pyo
+raisin/restyler/*.pyc
+raisin/restyler/*.pyo
+raisin/restyler/templates/*.pyc
+raisin/restyler/templates/*.pyo
+raisin/restyler/tests/*.pyc
+raisin/restyler/tests/*.pyo
