@@ -1,6 +1,14 @@
 Next release
 ============
 
+1.1.1 (2012-04-12)
+==================
+
+Bug fixes
+---------
+
+- Catch the NoMoreData exception of http_parser
+
 Features
 --------
 
