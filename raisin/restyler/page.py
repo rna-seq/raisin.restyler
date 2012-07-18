@@ -167,7 +167,7 @@ class Restyler(object):
         """
         packages = set(['corechart'])
         for chart in self.charts:
-            if chart.get('charttype', None) == 'Table':
+            if chart.get('charttype', None) in ['Table', 'ImageSparkLine']:
                 packages.add(chart['charttype'].lower())
         return packages
 
