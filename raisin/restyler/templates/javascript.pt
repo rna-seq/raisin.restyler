@@ -18,11 +18,15 @@ function drawTables() {
             var data = new google.visualization.DataTable(<span tal:replace="python:chart.get('data', '')" />, 0.6);
             var view = new google.visualization.DataView(data);
 
+            <tal:block tal:condition="python:charttype and charttype != 'ImageSparkLine'">
             var table = new google.visualization.<span tal:replace="charttype" />(document.getElementById('<tal:block content="python:chart['id']" />_div'));
-
+            </tal:block>
+ 
             <tal:block content="structure python:chart.get('javascript', '')" />
 
+            <tal:block tal:condition="python:charttype and charttype != 'ImageSparkLine'">
             table.draw(view,{<tal:block content="python:chart['chartoptions_rendered']" />});    
+            </tal:block>
 
         </tal:block>
 
