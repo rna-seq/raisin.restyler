@@ -93,7 +93,7 @@ class Box:
         packages = set(['corechart'])
         chart = restyler.get_chart_infos(request)[0]
         if 'charttype' in chart and 'data' in chart:
-            if chart['charttype'] == 'Table':
+            if chart['charttype'] in ['Table', 'ImageSparkLine']:
                 packages.add(chart['charttype'].lower())
             self.javascript = render_javascript([chart, ], packages)
 
@@ -106,6 +106,10 @@ class Box:
             chart['data'] = chart[JSON]
             # Prepare the packages are needed by the google chart tools
             if chart['charttype'] == 'Table':
+                packages.add(chart['charttype'].lower())
+            if chart['charttype'] == 'ImageSparkLine':
+                # Box uses CSS from table, so we have to add it here
+                packages.add('table')
                 packages.add(chart['charttype'].lower())
             chart['chartoptions']['is3D'] = False
             rendered = render_chartoptions(chart['chartoptions'])
