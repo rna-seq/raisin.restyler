@@ -81,6 +81,8 @@ class Layout(object):
 
     def __init__(self, request):
         self.layout_id = request.matched_route.name[len('p1_'):]
+        if self.layout_id.startswith('tab_'):
+            self.layout_id = self.layout_id[len('tab_'):]
         self.layout = PAGES[self.layout_id]
         if self.layout_id in ['homepage', 'experiment_subset']:
             view = self.layout
@@ -259,13 +261,18 @@ class Page(object):
         _pro = '/project/%(project_name)s'
         _par = '/%(parameter_list)s/%(parameter_values)s'
         _exp = '/replicate/%(replicate_name)s'
-        _tab = '/tab/%(tab_name)s'
+        
+        _tab = ''
+        if layout.has_key('tabbed_views'):
+            if 'tab_name' in request.matchdict:
+                if layout['tabbed_views'][0] == request.matchdict['tab_name']:
+                    _tab = '/tab/%(tab_name)s'
 
         mapping = {
             'homepage': ('Projects',
                          '/'),
             'project': ('Project: %(project_name)s',
-                        _pro + '/tab/experiments/'),
+                        _pro),
             'parameters': ('Experiment: %(parameter_values)s',
                            _pro + _par + _tab),
             'replicate': ('Replicate: %(replicate_name)s',
@@ -301,12 +308,14 @@ class Page(object):
                 experiment_replicates = {'table_data': [],
                                    'table_description': description,
                                   }
-            tab_name = matchdict.get('tab_name', None)
+            layout = self.layout.get_layout()
+            tab_name = matchdict.get('tab_name', layout['tabbed_views'][0])
             items['list'] = []
             for item in experiment_replicates['table_data']:
-                url = request.application_url + item[4]
-                if not tab_name == 'experiments':
-                    url = url[:-len('overview')] + tab_name
+                if tab_name != layout['tabbed_views'][0]:
+                    url = request.application_url + item[4] + '/tab/' + tab_name
+                else:
+                    url = request.application_url + item[4]
                 items['list'].append({'title': item[3], 'url': url})
         return items
 
@@ -316,7 +325,7 @@ class Page(object):
         layout = self.layout.get_layout()
         if not 'tabbed_views' in layout:
             return
-        tab_name = request.matchdict.get('tab_name', None)
+        tab_name = request.matchdict.get('tab_name', layout['tabbed_views'][0])
         tabs = []
 
         _pro = '/project/%(project_name)s'
@@ -333,7 +342,11 @@ class Page(object):
             }
 
         for tab in layout['tabbed_views']:
-            path = mapping[layout_id] % request.matchdict + _tab % tab
+            if tab != layout['tabbed_views'][0]:
+                # The first tab does not need to be specified
+                path = mapping[layout_id] % request.matchdict + _tab % tab
+            else:
+                path = mapping[layout_id] % request.matchdict
             tabs.append({'id': tab,
                          'title': layout[tab]['title'],
                          'current': tab == tab_name,
