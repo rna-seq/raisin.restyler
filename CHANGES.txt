@@ -1,3 +1,6 @@
+- The first tab can now be accessed without specifying it explicitly, making default
+  urls nicer. For example /project/ENCODE instead of /project/ENCODE/tab/experiments.
+
 - Add zope.pagetemplate dependency to setup.py
 
 1.1.2 (2012-07-20)
