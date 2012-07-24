@@ -32,6 +32,7 @@ setup(name='raisin.restyler',
       install_requires=[
           # -*- Extra requirements: -*-
           'configobj',
+          'zope.pagetemplate',
       ],
       entry_points="""
       # -*- Entry points: -*-
