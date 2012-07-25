@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys, os
 
-version = '1.1.2'
+version = '1.2'
 long_description = """The raisin.restyler package is a part of Raisin, the web application
 used for publishing the summary statistics of Grape, a pipeline used for processing and
 analyzing RNA-Seq data."""
