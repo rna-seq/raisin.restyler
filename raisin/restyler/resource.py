@@ -33,7 +33,7 @@ class Resource:
             # line 70 in _check_headers_complete
             # raise NoMoreData("Can't parse headers")
             # NoMoreData: Can't parse headers
-            pass 
+            pass
         if not result is None and content_type == PICKLED:
             result = pickle.loads(result)
         return result

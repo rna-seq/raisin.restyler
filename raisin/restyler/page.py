@@ -261,7 +261,7 @@ class Page(object):
         _pro = '/project/%(project_name)s'
         _par = '/%(parameter_list)s/%(parameter_values)s'
         _exp = '/replicate/%(replicate_name)s'
-        
+
         _tab = ''
         if layout.has_key('tabbed_views'):
             if 'tab_name' in request.matchdict:
