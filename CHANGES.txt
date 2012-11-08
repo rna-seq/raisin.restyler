@@ -1,3 +1,8 @@
+Next release
+============
+
+- legend and fontSize rendering fix
+
 1.2 (2012-07-25)
 ================
 
