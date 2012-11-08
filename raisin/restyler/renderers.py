@@ -27,19 +27,19 @@ def render_chartoptions(chartoptions):
         rendered += "%s: " % key
         if key in ['height', 'width', 'max', 'min', 'pointSize',
                    'lineSize', 'legendFontSize', 'pageSize',
-                   'lineWidth', 'hAxis', 'vAxis']:
+                   'lineWidth', 'hAxis', 'vAxis', 'fontSize']:
             rendered += "%s" % value
         elif key in ['isStacked', 'is3D', 'smoothLine',
                      'showRowNumber', 'allowHtml', 'chartArea']:
             rendered += "%s" % str(value).lower()
-        elif key in ['titleX', 'titleY', 'legend', 'page',
+        elif key in ['titleX', 'titleY', 'page',
                      'curveType', 'title']:
             rendered += "'%s'" % value
-        elif key in ['colors', ]:
+        elif key in ['colors', 'legend']:
             rendered += str(value)
         else:
-            print key, value, type(value)
-            raise AttributeError
+            message = " ".join([key, value, str(type(value))])
+            raise AttributeError("Problem rendering: %s" % message)
     return rendered
 
 
