@@ -1,6 +1,9 @@
 1.3 (2012-11-11)
 ================
 
+- fix unit tests that still checked for the now obsolete tabs/tab_name
+  part of the breadcrumbs urls
+
 - Add Makefile produced by tooth.paste
 
 - legend and fontSize rendering fix
