@@ -1,5 +1,7 @@
-Next release
-============
+1.3 (2012-11-11)
+================
+
+- Add Makefile produced by tooth.paste
 
 - legend and fontSize rendering fix
 
