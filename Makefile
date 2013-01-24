@@ -9,6 +9,11 @@ docs: bin/sphinx-build
 
 build:	
 	virtualenv $(VTENV_OPTS) .
+	./bin/pip install raisin.box==1.4
+	./bin/pip install raisin.page==1.3
+	./bin/pip install raisin.restkit==1.1.1
+	./bin/pip install restkit
+	./bin/pip install pyramid==1.3
 	bin/python setup.py develop
 
 test: bin/nosetests bin/gvizapi
